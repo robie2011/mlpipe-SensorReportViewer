@@ -9,7 +9,13 @@ import { HttpClient } from '@angular/common/http';
 })
 export class AppComponent {
   title = 'SensorReportViewer';
-  data = null
+  data: ISensorReportData = null
+  grouperFunc = (x: number[]) => {
+    let copy = x.slice()
+    copy.pop()
+    return copy
+  }
+
   disabledOptions = {
     'sensors': {},
     'metrics': {},
@@ -17,7 +23,7 @@ export class AppComponent {
   } 
 
   constructor(http: HttpClient){
-    http.get('/assets/export_data.json').subscribe(obj => {
+    http.get('/assets/export_data.json').subscribe((obj: ISensorReportData) => {
       this.data = obj
       console.log(obj)
     })
@@ -31,4 +37,69 @@ export class AppComponent {
 
     this.disabledOptions[config][name] = newState
   }
+
+  grouping(data: ISensorReportData){
+    let valuesByGroup: ICustomGroup = {}
+
+    // data.meta.groups.forEach((groupId, index) => {
+    //   let key = this.grouperFunc(groupId)
+    //   let keyHash = key.join(",")
+    //   if (!valuesByGroup[keyHash]){
+    //     valuesByGroup[keyHash] = {
+    //       key: key,
+    //       indexes: [],
+    //       data: []
+    //     }
+    //   }
+
+    //   valuesByGroup[keyHash].indexes.push(index)
+    // })
+  }
+
+  testData: IMaterializedView = {
+    name: "Test Gruppe",
+    metricNames: ["Durchschnitt", "Max", "Min"],
+    subgroupNames: ["Mo", "Di", "Mi", "Do", "Fr"],
+    metricsBySubgroup: [
+      [Math.random()*10, Math.random()* 55, Math.random()*100],
+      [Math.random()*10, Math.random()* 55, Math.random()*100],
+      [Math.random()*10, Math.random()* 55, Math.random()*100],
+      [Math.random()*10, Math.random()* 55, Math.random()*100],
+      [Math.random()*10, Math.random()* 55, Math.random()*100],
+    ]
+  }
+}
+
+interface ISensorReportData {
+  meta: {
+    groupers: [string],
+
+    // level 0: group id
+    // level 1: combined group value
+    groups: number[][],
+    metrics: string[],
+    sensors: string[]
+  }
+  // level 0: group id
+  // level 1: sensor id
+  // level 2: metrics id
+  metrics: number[][][]
+}
+
+interface ICustomGroup {
+  [id: string]: {
+    key: number[],
+    indexes: number[],
+    // level 0: sub-group Id
+    // level 1: sensor id
+    // level 2: metrics
+    data: number[][][]
+  }
+}
+
+interface IMaterializedView {
+  name: string,
+  subgroupNames: string[],
+  metricNames: string[],
+  metricsBySubgroup: number[][]
 }
