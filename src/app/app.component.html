@@ -1,51 +1,37 @@
-<div class="container">
-  <h1>Main</h1>
+<div class="pl-3 p3-3">
+  <h1>Report</h1>
   <div *ngIf="data">
-    <h1><a  class="btn btn-secondary" role="button" data-toggle="collapse" href="#options">Options</a></h1>
+    <h1><a class="btn btn-secondary" role="button" data-toggle="collapse" href="#options">Options</a></h1>
     <div id="options" class="collapse show">
       <h2 class="mt-4">Sensors</h2>
       <div class="">
-        <button type="button" 
-        (click)="toggleButton('sensors', s, !disabledOptions['sensors'][s])" 
-        class="btn mr-2" 
-        [ngClass]="!disabledOptions['sensors'][s] ? 'btn-primary' : 'btn-outline-primary'"
-        *ngFor="let s of data.meta.sensors">{{s}}</button>
+        <button type="button" (click)="toggleButton('sensors', index, !disabledOptions['sensors'][index])" class="btn mr-2"
+          [ngClass]="!disabledOptions['sensors'][index] ? 'btn-primary' : 'btn-outline-primary'"
+          *ngFor="let s of data.meta.sensors; let index = index">{{s}}</button>
       </div>
-  
+
       <h2 class="mt-4">Metrics</h2>
       <div class="">
-        <button type="button" 
-        (click)="toggleButton('metrics', m, !disabledOptions['metrics'][m])" 
-        class="btn mr-2" 
-        [ngClass]="!disabledOptions['metrics'][m] ? 'btn-primary' : 'btn-outline-primary'"
-        *ngFor="let m of data.meta.metrics">{{m}}</button>
-      </div>
-  
-      <h2 class="mt-4">Partitioner</h2>
-      <div class="">
-        <button type="button" 
-        (click)="toggleButton('metrics', p, !disabledOptions['metrics'][p])" 
-        class="btn mr-2" 
-        [ngClass]="!disabledOptions['metrics'][p] ? 'btn-primary' : 'btn-outline-primary'"
-        *ngFor="let p of data.meta.groupers">{{p}}</button>
+        <button type="button" (click)="toggleButton('metrics', index, !disabledOptions['metrics'][index])" class="btn mr-2"
+          [ngClass]="!disabledOptions['metrics'][index] ? 'btn-primary' : 'btn-outline-primary'"
+          *ngFor="let m of data.meta.metrics; let index = index">{{m}}</button>
       </div>
     </div>
   </div>
-  
-    <div>
-      <h3>{{data['meta']['groups'][0].join('-')}}</h3>
-      <table class="table">
-        <thead>
-          <tr *ngFor="let m of data.meta.metrics">{{m}}</tr>
-        </thead>
-        <tbody>
-          <tr>
-            
-          </tr>
-        </tbody>
-      </table>
-      {{data['metrics'][0] | json}}
+
+
+  <div *ngIf="viewData">
+    <div *ngFor="let v of viewData" class="mt-5">
+      <h2><span class="badge badge-dark">{{v.parentGroupname}}</span></h2>
+      <materialized-sensor 
+      *ngFor="let _ of v.sensorNames; let sensorId = index" 
+      [hidden]="v.disabledOptions['sensors'][sensorId]"
+      [data]="v"
+      [sensorId]="sensorId"></materialized-sensor>
     </div>
+  </div>
+
+
 
   <!-- only necessary for implementation multiple routes -->
   <router-outlet></router-outlet>

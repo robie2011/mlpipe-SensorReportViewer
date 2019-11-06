@@ -1,0 +1,16 @@
+<h3 class="mt-3"><span class="badge badge-light">{{data.sensorNames[sensorId]}}</span></h3>
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th scope="col"></th>
+      <th scope="col" *ngFor="let name of data.groupNames">{{name}}</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let analyzer of data.analyzerNames; let analyzerId = index" [hidden]="data.disabledOptions['metrics'][analyzerId]">
+      <th scope="row">{{analyzer}}</th>
+      <td class="text-monospace" *ngFor="let group of data.metricByAnalyzerBySensorByGroup; let groupId = index">
+        {{data.metricByAnalyzerBySensorByGroup[groupId][sensorId][analyzerId] | number: '.2-2'}}</td>
+    </tr>
+  </tbody>
+</table>
