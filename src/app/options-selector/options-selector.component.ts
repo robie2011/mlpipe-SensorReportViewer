@@ -6,8 +6,8 @@ export type SelectedOptions = {[index: string]: boolean}
 
 @Component({
   selector: 'multi-options-selector',
-  templateUrl: './multi-options-selector.component.html',
-  styleUrls: ['./multi-options-selector.component.scss']
+  templateUrl: './options-selector.component.html',
+  styleUrls: ['./options-selector.component.scss']
 })
 export class MultiOptionsSelectorComponent {
   @Input()

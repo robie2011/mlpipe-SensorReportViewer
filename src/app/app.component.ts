@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { ISensorsLastGroupLevelMetrics, ISensorReportData, restructureData } from './datastructures';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { debounceTime } from "rxjs/operators";
-import { SelectedOptions, MultiOptions } from './multi-options-selector/multi-options-selector.component';
+import { SelectedOptions, MultiOptions } from './options-selector/options-selector.component';
 
 const VIEW_UPDATE_DELAY = 500
 //const json_file = "./assets/export_data.json"
@@ -36,7 +36,6 @@ export class AppComponent implements OnInit {
 
   sensorsSelected(s: SelectedOptions) {
     this.sensorsEnabled = s
-
   }
 
   metricsSelected(s: SelectedOptions) {

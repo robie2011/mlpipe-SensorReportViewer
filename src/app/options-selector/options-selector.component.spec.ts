@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MultiOptionsSelectorComponent } from './multi-options-selector.component';
+import { MultiOptionsSelectorComponent } from './options-selector.component';
 
 describe('MultiOptionsSelectorComponent', () => {
   let component: MultiOptionsSelectorComponent;

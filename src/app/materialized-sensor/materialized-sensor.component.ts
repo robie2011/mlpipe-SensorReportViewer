@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ISensorsLastGroupLevelMetrics } from '../datastructures';
-import { SelectedOptions } from '../multi-options-selector/multi-options-selector.component';
+import { SelectedOptions } from '../options-selector/options-selector.component';
 
 @Component({
   selector: 'materialized-sensor',
