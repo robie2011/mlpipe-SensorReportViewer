@@ -1,6 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ISensorsLastGroupLevelMetrics, ISensorReportData } from './datastructures';
+import { ISensorsLastGroupLevelMetrics, ISensorReportData, restructureData } from './datastructures';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { debounceTime } from "rxjs/operators";
+
+const VIEW_UPDATE_DELAY = 500
+//const json_file = "./assets/export_data.json"
+const json_file = "./assets/export_data_empa.json"
+
+// sample heatmap: https://plot.ly/javascript/heatmaps/
 
 
 @Component({
@@ -8,83 +16,91 @@ import { ISensorsLastGroupLevelMetrics, ISensorReportData } from './datastructur
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
-  title = 'SensorReportViewer';
-  data = null
-  viewData: ISensorsLastGroupLevelMetrics[]
+export class AppComponent implements OnInit {
+  settingsObs: Subject<ISettingsData> = new Subject<ISettingsData>()
+  data
+  maxGroupInitValue = 5
 
-  grouperFunc = (x: number[]) => {
-    let copy = x.slice()
-    copy.pop()
-    return copy
-  }
+  viewObs: Subject<ISensorsLastGroupLevelMetrics[]> = new Subject<ISensorsLastGroupLevelMetrics[]>()
+  private _cachedData: ISensorsLastGroupLevelMetrics[]
+  private _cachedSettings
 
   disabledOptions = {
     'sensors': {},
     'metrics': {},
-  } 
-
-  constructor(http: HttpClient){
-    http.get('./assets/export_data.json').subscribe((obj: ISensorReportData) => {
-      this.data = obj
-      console.log(obj)
-      this.grouping(obj)
-    })
   }
 
-  toggleButton(config: string, id: number, newState: boolean){
-    if (this.disabledOptions[config] === undefined){
+  constructor(private http: HttpClient) {
+
+  }
+
+  toggleButton(config: string, id: number, newState: boolean) {
+    if (this.disabledOptions[config] === undefined) {
       this.disabledOptions[config] = {}
     }
 
     this.disabledOptions[config][id] = newState
   }
 
-  grouping(data: ISensorReportData){
-    //for (let index = 0; index < data.meta.groups.length; index++) {
-    let result: ISensorsLastGroupLevelMetrics[] = []
-    let lastParentGroup: ISensorsLastGroupLevelMetrics
-    let prettyGroupnameMapper = {}
-    data.meta.prettyGroupnames.forEach((group, groupId) => {
-      if (group.length > 0){
-        prettyGroupnameMapper[groupId] = Object.assign({}, group)
-      }
+
+  ngOnInit(): void {
+    this.http.get(json_file).subscribe((obj: ISensorReportData) => {
+      console.log('data downloded and restructured')
+      console.log(obj)
+      this.data = obj
+      this._cachedData = restructureData(obj, this.disabledOptions)
+
+      console.log('send next settings')
+      this.settingsObs.next({
+        countGroups: this._cachedData.length,
+        limit: this.maxGroupInitValue,
+        pageActive: 0,
+        pages: Array(Math.ceil(this._cachedData.length / this.maxGroupInitValue)).fill(1).map((v, i) => i)
+      })
     })
 
-    for (let groupId = 0; groupId < data.meta.groups.length; groupId++) {
-      const group: string[] = []
-      for (let levelId = 0; levelId < data.meta.groups[groupId].length; levelId++) {
-        const groupLevelValue = data.meta.groups[groupId][levelId]
-        if (prettyGroupnameMapper[levelId] !== undefined){
-          group.push(prettyGroupnameMapper[levelId][groupLevelValue])
-        } else {
-          group.push(groupLevelValue.toString())
-        }
-      }
-
-      let parentGroup: string[] = group.slice()
-      let lowlevelGroupname = parentGroup.pop().toString()
-      let currentParentGroupHash = parentGroup.join(" ⮀ ")
-      
-      if (!lastParentGroup || lastParentGroup.parentGroupname != currentParentGroupHash) {
-        lastParentGroup = {
-          parentGroupname: currentParentGroupHash,
-          analyzerNames: data.meta.metrics,
-          sensorNames: data.meta.sensors,
-          groupNames: [],
-          metricByAnalyzerBySensorByGroup: [],
-          disabledOptions: this.disabledOptions
-        }
-
-        result.push(lastParentGroup)
-      }
-
-      lastParentGroup.groupNames.push(lowlevelGroupname)
-      lastParentGroup.metricByAnalyzerBySensorByGroup.push(
-        data.metrics[groupId]
+    this.settingsObs.pipe(debounceTime(VIEW_UPDATE_DELAY)).subscribe(settings => {
+      console.log("updating data w/", settings)
+      this._cachedSettings = settings
+      this.viewObs.next(
+        this.getFilteredData(settings.limit, settings.pageActive)
       )
-    }
+    })
 
-    this.viewData = result.slice(0, 10)
+    this.viewObs.subscribe(() =>
+      console.log("updating new data")
+    )
   }
+
+  updateSettings(name: string, value) {
+    let lastSetting = Object.assign({}, this._cachedSettings)
+    switch (name) {
+      case "page":
+        lastSetting.pageActive = value
+        break;
+      case "pageLimit":
+        lastSetting.limit = value
+        lastSetting.pageActive = 0
+        lastSetting.pages = Array(Math.ceil(this._cachedData.length / value)-1).fill(1).map((v, i) => i)
+        break;
+
+      default:
+        throw 'not found: ' + name
+    }
+    this.settingsObs.next(lastSetting)
+  }
+
+  private getFilteredData(limit: number, activePage: number): ISensorsLastGroupLevelMetrics[] {
+    let indexStart = limit * activePage
+    let indexEnd = Math.min(indexStart + limit, this._cachedData.length)
+    console.log(indexStart, indexEnd, this._cachedData.length)
+    return this._cachedData.slice(indexStart, indexEnd)
+  }
+}
+
+interface ISettingsData {
+  countGroups: number,
+  limit: number,
+  pages: number[],
+  pageActive: number
 }

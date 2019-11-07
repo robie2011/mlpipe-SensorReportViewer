@@ -1,8 +1,11 @@
 <div class="pl-3 p3-3">
+
   <h1>Report</h1>
-  <div *ngIf="data">
+
+  <div *ngIf="(settingsObs | async) as settings">
     <h1><a class="btn btn-secondary" role="button" data-toggle="collapse" href="#options">Options</a></h1>
     <div id="options" class="collapse show">
+      
       <h2 class="mt-4">Sensors</h2>
       <div class="">
         <button type="button" (click)="toggleButton('sensors', index, !disabledOptions['sensors'][index])" class="btn mr-2"
@@ -16,11 +19,28 @@
           [ngClass]="!disabledOptions['metrics'][index] ? 'btn-primary' : 'btn-outline-primary'"
           *ngFor="let m of data.meta.metrics; let index = index">{{m}}</button>
       </div>
+
+      <h2 class="mt-4">Paging</h2>
+      <div class="text-center">
+        <div class="form-group col-lg-3">
+          <label for="formControlRange">groups per page ({{maxGroupInitValue}})</label>
+          <input type="range" [(ngModel)]="maxGroupInitValue" (change)="updateSettings('pageLimit', $event.target.value)" min="1" max="50" class="form-control-range" id="formControlRange">
+        </div>
+      </div>
+
+        <div class="text-center">
+          <button class="btn mr-1" 
+                *ngFor="let pageNumber of settings.pages"
+                (click)="updateSettings('page', pageNumber)"
+                [class.btn-primary]="settings.pageActive == pageNumber"
+                [class.btn-outline-primary]="settings.pageActive != pageNumber"
+                >{{pageNumber + 1}}</button>
+        </div>
     </div>
   </div>
 
 
-  <div *ngIf="viewData">
+  <div *ngIf="(viewObs | async) as viewData">
     <div *ngFor="let v of viewData" class="mt-5">
       <h2><span class="badge badge-dark">{{v.parentGroupname}}</span></h2>
       <materialized-sensor 
@@ -30,7 +50,6 @@
       [sensorId]="sensorId"></materialized-sensor>
     </div>
   </div>
-
 
 
   <!-- only necessary for implementation multiple routes -->
