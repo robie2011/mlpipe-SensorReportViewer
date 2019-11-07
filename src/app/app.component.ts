@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { ISensorsLastGroupLevelMetrics, ISensorReportData, restructureData } from './datastructures';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { debounceTime } from "rxjs/operators";
-import { SelectedOptions } from './multi-options-selector/multi-options-selector.component';
+import { SelectedOptions, MultiOptions } from './multi-options-selector/multi-options-selector.component';
 
 const VIEW_UPDATE_DELAY = 500
 //const json_file = "./assets/export_data.json"
@@ -26,8 +26,12 @@ export class AppComponent implements OnInit {
   private _cachedData: ISensorsLastGroupLevelMetrics[]
   private _cachedSettings
   
-  private multiOptionsSensors
+  private multiOptionsSensors: MultiOptions
   private sensorsEnabled: SelectedOptions = {}
+
+  private multiOptionsMetrics: MultiOptions
+  private metricsEnabled: SelectedOptions = {}
+
 
   disabledOptions = {
     'sensors': {},
@@ -38,7 +42,11 @@ export class AppComponent implements OnInit {
 
   sensorsSelected(s: SelectedOptions) {
     this.sensorsEnabled = s
-    console.log(s)
+
+  }
+
+  metricsSelected(s: SelectedOptions) {
+    this.metricsEnabled = s
   }
 
   toggleButton(config: string, id: number, newState: boolean) {
@@ -55,7 +63,11 @@ export class AppComponent implements OnInit {
       console.log('data downloded and restructured')
       console.log(obj)
       this.data = obj
+      
+      // init data for MultiOptionsComponent
       this.multiOptionsSensors = Object.assign({}, obj.meta.sensors)
+      this.multiOptionsMetrics = Object.assign({}, obj.meta.metrics)
+
       this._cachedData = restructureData(obj, this.disabledOptions)
 
       console.log('send next settings')

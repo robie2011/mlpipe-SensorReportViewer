@@ -23,6 +23,8 @@ export interface ISensorsLastGroupLevelMetrics {
   groupNames: string[],
   analyzerNames: string[],
   metricByAnalyzerBySensorByGroup: number[][][],
+  
+  // todo: can be removed
   disabledOptions: {
     [index: string]: {
       [index: number]: boolean

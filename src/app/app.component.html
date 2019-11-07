@@ -11,12 +11,11 @@
         [options]="multiOptionsSensors"
         (select)="sensorsSelected($event)"></multi-options-selector>
 
-      <h2 class="mt-4">Metrics</h2>
-      <div class="">
-        <button type="button" (click)="toggleButton('metrics', index, !disabledOptions['metrics'][index])" class="btn mr-2"
-          [ngClass]="!disabledOptions['metrics'][index] ? 'btn-primary' : 'btn-outline-primary'"
-          *ngFor="let m of data.meta.metrics; let index = index">{{m}}</button>
-      </div>
+      <multi-options-selector 
+        [name]="'Metrics'" 
+        [defaultSelection]="[]"
+        [options]="multiOptionsMetrics"
+        (select)="metricsSelected($event)"></multi-options-selector>
 
       <h2 class="mt-4">Paging</h2>
       <div class="text-center">
@@ -45,7 +44,8 @@
       *ngFor="let item of multiOptionsSensors | keyvalue" 
       [hidden]="!sensorsEnabled[item.key]"
       [data]="lowlevelGroupData"
-      [sensorId]="item.key"></materialized-sensor>
+      [sensorId]="item.key"
+      [metricsEnabled]="metricsEnabled"></materialized-sensor>
     </div>
   </div>
 

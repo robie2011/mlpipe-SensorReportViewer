@@ -7,7 +7,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let analyzer of data.analyzerNames; let analyzerId = index" [hidden]="data.disabledOptions['metrics'][analyzerId]">
+    <tr *ngFor="let analyzer of data.analyzerNames; let analyzerId = index" [hidden]="!metricsEnabled[analyzerId]">
       <th scope="row">{{analyzer}}</th>
       <td class="text-monospace" *ngFor="let group of data.metricByAnalyzerBySensorByGroup; let groupId = index">
         {{data.metricByAnalyzerBySensorByGroup[groupId][sensorId][analyzerId] | number: '.2-2'}}</td>
