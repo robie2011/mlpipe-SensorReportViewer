@@ -5,17 +5,19 @@
   <div *ngIf="(settingsObs | async) as settings">
     <h1><a class="btn btn-secondary" role="button" data-toggle="collapse" href="#options">Options</a></h1>
     <div id="options" class="collapse show">
-      <multi-options-selector 
+      <options-selector 
         [name]="'Sensors'" 
         [defaultSelection]="[]"
         [options]="multiOptionsSensors"
-        (select)="sensorsSelected($event)"></multi-options-selector>
+        [multiselect]="true"
+        (select)="sensorsSelected($event)"></options-selector>
 
-      <multi-options-selector 
+      <options-selector 
         [name]="'Metrics'" 
         [defaultSelection]="[]"
         [options]="multiOptionsMetrics"
-        (select)="metricsSelected($event)"></multi-options-selector>
+        [multiselect]="true"
+        (select)="metricsSelected($event)"></options-selector>
 
       <h2 class="mt-4">Paging</h2>
       <div class="text-center">

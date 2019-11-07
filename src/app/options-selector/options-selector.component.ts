@@ -5,7 +5,7 @@ export type MultiOptions = {[index: string]: any}
 export type SelectedOptions = {[index: string]: boolean}
 
 @Component({
-  selector: 'multi-options-selector',
+  selector: 'options-selector',
   templateUrl: './options-selector.component.html',
   styleUrls: ['./options-selector.component.scss']
 })
@@ -15,6 +15,9 @@ export class MultiOptionsSelectorComponent {
   
   @Input()
   name: string
+
+  @Input()
+  multiselect: boolean = false
 
   @Output() 
   select = new EventEmitter<SelectedOptions>()
@@ -26,6 +29,10 @@ export class MultiOptionsSelectorComponent {
   }
 
   private toggleSelection(index: string){
+    if (!this.multiselect){
+      Object.keys(this._selected).forEach(key => this._selected[key] = false)
+    }
+
     this._selected[index] = !this._selected[index]
     this.propagateSelection()
   }
