@@ -22,19 +22,10 @@ export interface ISensorsLastGroupLevelMetrics {
   sensorNames: string[],
   groupNames: string[],
   analyzerNames: string[],
-  metricByAnalyzerBySensorByGroup: number[][][],
-  
-  // todo: can be removed
-  disabledOptions: {
-    [index: string]: {
-      [index: number]: boolean
-    }
-  }
+  metricByAnalyzerBySensorByGroup: number[][][]
 }
 
-export function restructureData(
-  data: ISensorReportData,
-  disabledOptions: {}): ISensorsLastGroupLevelMetrics[] {
+export function restructureData(data: ISensorReportData): ISensorsLastGroupLevelMetrics[] {
   let result: ISensorsLastGroupLevelMetrics[] = []
   let lastParentGroup: ISensorsLastGroupLevelMetrics
   let prettyGroupnameMapper = {}
@@ -66,8 +57,7 @@ export function restructureData(
         analyzerNames: data.meta.metrics,
         sensorNames: data.meta.sensors,
         groupNames: [],
-        metricByAnalyzerBySensorByGroup: [],
-        disabledOptions: disabledOptions // todo: convert to rxjs stream
+        metricByAnalyzerBySensorByGroup: []
       }
 
       result.push(lastParentGroup)

@@ -32,12 +32,6 @@ export class AppComponent implements OnInit {
   private multiOptionsMetrics: MultiOptions
   private metricsEnabled: SelectedOptions = {}
 
-
-  disabledOptions = {
-    'sensors': {},
-    'metrics': {},
-  }
-
   constructor(private http: HttpClient) {}
 
   sensorsSelected(s: SelectedOptions) {
@@ -49,15 +43,6 @@ export class AppComponent implements OnInit {
     this.metricsEnabled = s
   }
 
-  toggleButton(config: string, id: number, newState: boolean) {
-    if (this.disabledOptions[config] === undefined) {
-      this.disabledOptions[config] = {}
-    }
-
-    this.disabledOptions[config][id] = newState
-  }
-
-
   ngOnInit(): void {
     this.http.get(json_file).subscribe((obj: ISensorReportData) => {
       console.log('data downloded and restructured')
@@ -68,7 +53,7 @@ export class AppComponent implements OnInit {
       this.multiOptionsSensors = Object.assign({}, obj.meta.sensors)
       this.multiOptionsMetrics = Object.assign({}, obj.meta.metrics)
 
-      this._cachedData = restructureData(obj, this.disabledOptions)
+      this._cachedData = restructureData(obj)
 
       console.log('send next settings')
       this.settingsObs.next({
