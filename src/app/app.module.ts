@@ -6,11 +6,13 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
 import { MaterializedSensorComponent } from './materialized-sensor/materialized-sensor.component';
+import { MultiOptionsSelectorComponent } from './multi-options-selector/multi-options-selector.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    MaterializedSensorComponent
+    MaterializedSensorComponent,
+    MultiOptionsSelectorComponent
   ],
   imports: [
     BrowserModule,

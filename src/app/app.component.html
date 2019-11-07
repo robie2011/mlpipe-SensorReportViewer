@@ -5,13 +5,11 @@
   <div *ngIf="(settingsObs | async) as settings">
     <h1><a class="btn btn-secondary" role="button" data-toggle="collapse" href="#options">Options</a></h1>
     <div id="options" class="collapse show">
-      
-      <h2 class="mt-4">Sensors</h2>
-      <div class="">
-        <button type="button" (click)="toggleButton('sensors', index, !disabledOptions['sensors'][index])" class="btn mr-2"
-          [ngClass]="!disabledOptions['sensors'][index] ? 'btn-primary' : 'btn-outline-primary'"
-          *ngFor="let s of data.meta.sensors; let index = index">{{s}}</button>
-      </div>
+      <multi-options-selector 
+        [name]="'Sensors'" 
+        [defaultSelection]="[]"
+        [options]="multiOptionsSensors"
+        (select)="sensorsSelected($event)"></multi-options-selector>
 
       <h2 class="mt-4">Metrics</h2>
       <div class="">
@@ -41,13 +39,13 @@
 
 
   <div *ngIf="(viewObs | async) as viewData">
-    <div *ngFor="let v of viewData" class="mt-5">
-      <h2><span class="badge badge-dark">{{v.parentGroupname}}</span></h2>
+    <div *ngFor="let lowlevelGroupData of viewData" class="mt-5">
+      <h2><span class="badge badge-dark">{{lowlevelGroupData.parentGroupname}}</span></h2>
       <materialized-sensor 
-      *ngFor="let _ of v.sensorNames; let sensorId = index" 
-      [hidden]="v.disabledOptions['sensors'][sensorId]"
-      [data]="v"
-      [sensorId]="sensorId"></materialized-sensor>
+      *ngFor="let item of multiOptionsSensors | keyvalue" 
+      [hidden]="!sensorsEnabled[item.key]"
+      [data]="lowlevelGroupData"
+      [sensorId]="item.key"></materialized-sensor>
     </div>
   </div>
 

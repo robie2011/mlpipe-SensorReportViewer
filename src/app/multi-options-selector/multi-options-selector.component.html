@@ -1,0 +1,6 @@
+<h2 class="mt-4">{{name}}</h2>
+<div class="">
+  <button type="button" (click)="toggleSelection(item.key)" class="btn mr-2"
+    [ngClass]="_selected[item.key] === true ? 'btn-primary' : 'btn-outline-primary'"
+    *ngFor="let item of options | keyvalue">{{options[item.key]}}</button>
+</div>
