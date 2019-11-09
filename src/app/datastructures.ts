@@ -76,3 +76,11 @@ export function restructureData(data: ISensorReportData): ISensorsLastGroupLevel
 export type SelectedOptions = {
   [index: string]: boolean;
 };
+
+
+export function mapToSelectedOptions(arr: number[]): SelectedOptions {
+  if (!arr || arr.length == 0) return {}
+  let data = {}
+  arr.forEach(x => data[x] = true)
+  return data
+}

@@ -44,9 +44,9 @@ export class AnalyticsDataFacadeService {
   private groups = new Subject<ISensorsLastGroupLevelMetrics[]>()
   private countDataSize = new Subject<number>()
 
-  private pages = combineLatest(this.countDataSize, this.limit).pipe(
-    map(([total, limit]) => 
-      Array(Math.ceil(total / limit)).fill(1).map((_, i) => (i+1).toString()))
+  private pages = combineLatest(this.cachedData, this.limit).pipe(
+    map(([restructuredGroups, limit]) => 
+      Array(Math.ceil(restructuredGroups.length / limit)).fill(1).map((_, i) => (i+1).toString()))
   )
 
   // it waits till we have values for all observable
@@ -56,7 +56,6 @@ export class AnalyticsDataFacadeService {
   constructor(private http: HttpClient) {
 
     this.setupSettings()
-    //this.settings$.subscribe(s => console.log('settings received', s))
 
     this.http.get(json_file).subscribe((data: ISensorReportData) => {
       console.log('data downloaded')
@@ -77,8 +76,11 @@ export class AnalyticsDataFacadeService {
 
     combineLatest(this.cachedData, this.pageSelected, this.limit).subscribe(
       ([data, page, limit]) => {
+        const ixStart = page[0] *limit
+        const ixEnd = page[0] *limit + limit
+
         this.groups.next(
-          data.slice(page[0] *limit, page[0] *limit + limit)
+          data.slice(ixStart, ixEnd)
         )
       }
     )

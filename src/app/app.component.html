@@ -52,11 +52,11 @@
     </table>
 
     <!-- end: settings -->
-    <div *ngIf="(viewObs | async) as viewData">
-        <div *ngFor="let lowlevelGroupData of viewData" class="mt-5">
+    <div>
+        <div *ngFor="let lowlevelGroupData of settings.groups" class="mt-5">
           <h2><span class="badge badge-dark">{{lowlevelGroupData.parentGroupname}}</span></h2>
-          <materialized-sensor *ngFor="let item of multiOptionsSensors | keyvalue" [hidden]="!sensorsEnabled[item.key]"
-            [data]="lowlevelGroupData" [sensorId]="item.key" [metricsEnabled]="metricsEnabled"></materialized-sensor>
+          <materialized-sensor *ngFor="let sensorId of settings.sensorsSelected"
+            [data]="lowlevelGroupData" [sensorId]="sensorId" [metricsEnabled]="settings.metricsSelected"></materialized-sensor>
         </div>
       </div>
 

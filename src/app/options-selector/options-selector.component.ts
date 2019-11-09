@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output } from '@angular/core';
 import { EventEmitter } from '@angular/core';
-import { SelectedOptions } from "../datastructures";
+import { SelectedOptions, mapToSelectedOptions } from "../datastructures";
 
 @Component({
   selector: 'options-selector',
@@ -8,16 +8,20 @@ import { SelectedOptions } from "../datastructures";
   styleUrls: ['./options-selector.component.scss']
 })
 export class MultiOptionsSelectorComponent {
+  visibleOptions: {index: number, name: string}[] = []
+  _options: string[]
+
   @Input() name: string
 
   @Input() multiselect: boolean = false
 
   @Output() select = new EventEmitter<number[]>()
 
-  @Input() options: string[]
-
   @Input() maxElements = 15
 
+  @Input()
+  options: string[]
+  
   isSlicedView = false
 
   private _selectedArray: number[]
@@ -25,23 +29,23 @@ export class MultiOptionsSelectorComponent {
   
   @Input()
   set selected(indexes: number[]){
+    let options = this.options
     this._selectedArray = indexes
-    this._selected = this.mapToSelectedOptions(indexes)
-  }
+    this._selected = mapToSelectedOptions(indexes)
 
-  get visibleOptions(){
-    this.isSlicedView = this.options.length > this.maxElements
+    this.isSlicedView = options.length > this.maxElements
      let {ixStart, ixEnd} = this.isSlicedView 
-        ? this.getSlicedViewIndex() 
-        : {ixStart: 0, ixEnd: this.options.length}
+        ? this.getSlicedViewIndex(options.length, this._selectedArray, this.maxElements) 
+        : {ixStart: 0, ixEnd: options.length}
 
-    return this.options.map((v, i) => {
+    this.visibleOptions = options.map((v, i) => {
       return {
         index: i,
         name: v
       }
     }).slice(ixStart, ixEnd)
   }
+
 
 
   click(index: number){
@@ -58,30 +62,23 @@ export class MultiOptionsSelectorComponent {
     this.select.emit(marked)
   }
 
-  private getSlicedViewIndex = () => {
+  private getSlicedViewIndex = (dataLength: number, selection: number[], maxElements: number) => {
     let ixStart = 0
-    let ixEnd = this.options.length
+    let ixEnd = dataLength
 
-    let currentElement = !this._selectedArray ? 0 : this._selectedArray[0];
-    let elementsToLeft = Math.floor(this.maxElements / 2);
+    let currentElement = !selection ? 0 : selection[0];
+    let elementsToLeft = Math.floor(maxElements / 2);
     ixStart = Math.max(0, currentElement - elementsToLeft);
-    ixEnd = ixStart + this.maxElements;
+    ixEnd = ixStart + maxElements;
     if (ixStart < 0) {
       ixStart = 0;
-      ixEnd = ixStart + this.maxElements;
+      ixEnd = ixStart + maxElements;
     }
-    else if (ixEnd > this.options.length) {
-      ixEnd = this.options.length;
-      ixStart = ixEnd - this.maxElements;
+    else if (ixEnd > dataLength) {
+      ixEnd = dataLength;
+      ixStart = ixEnd - maxElements;
     }
 
     return { ixStart, ixEnd }
-  }
-
-  private mapToSelectedOptions(arr: number[]): SelectedOptions {
-    if (!arr || arr.length == 0) return {}
-    let data = {}
-    arr.forEach(x => data[x] = true)
-    return data
   }
 }
