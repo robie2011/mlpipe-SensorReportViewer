@@ -1,12 +1,13 @@
-<div class="pl-3 p3-3">
+<div class="p-3">
 
-  <h1>Report</h1>
-
-  <div *ngIf="(analyticsDataFacade.settings$ | async) as settings">
+  <h1> 
+    <span><a class="btn btn-secondary" role="button" data-toggle="collapse" href="#options">Options</a></span>
+    Report
+  </h1>
+  <div id="options" class="collapse show bg-light text-white border border-dark rounded p-3" *ngIf="(analyticsDataFacade.settings$ | async) as settings">
 
     <!-- settings -->
-    <h1><a class="btn btn-secondary" role="button" data-toggle="collapse" href="#options">Options</a></h1>
-    <div id="options" class="collapse show">
+    <div>
       
       <options-selector 
         [name]="'Sensors'" 
@@ -36,8 +37,7 @@
         [selected]="settings.pageSelected"
         [options]="settings.pages" 
         (select)="analyticsDataFacade.updatePageSelected($event)"></options-selector>
-    </div>
-
+    
 
     <!-- debug -->
     <h1 class="mt-5"><a class="btn btn-secondary" #settingsBtn (click)="settingsBtn.showSettings = !settingsBtn.showSettings">Settings</a></h1>
@@ -51,20 +51,18 @@
       </tr>
     </table>
 
+    </div>
     <!-- end: settings -->
-    <div>
-        <div *ngFor="let lowlevelGroupData of settings.groups" class="mt-5">
-          <h2><span class="badge badge-dark">{{lowlevelGroupData.parentGroupname}}</span></h2>
-          <materialized-sensor *ngFor="let sensorId of settings.sensorsSelected"
-            [data]="lowlevelGroupData" [sensorId]="sensorId" [metricsEnabled]="settings.metricsSelected"></materialized-sensor>
-        </div>
-      </div>
 
   </div>
 
-
-
-
+  <div *ngIf="(analyticsDataFacade.settings$ | async) as settings">
+      <div *ngFor="let lowlevelGroupData of settings.groups" class="mt-5">
+        <h2><span class="badge badge-dark">{{lowlevelGroupData.parentGroupname}}</span></h2>
+        <materialized-sensor *ngFor="let sensorId of settings.sensorsSelected"
+          [data]="lowlevelGroupData" [sensorId]="sensorId" [metricsEnabled]="settings.metricsSelected"></materialized-sensor>
+      </div>
+    </div>
 
 
   <!-- only necessary for implementation multiple routes -->
