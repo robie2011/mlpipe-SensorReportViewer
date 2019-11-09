@@ -71,3 +71,8 @@ export function restructureData(data: ISensorReportData): ISensorsLastGroupLevel
 
   return result
 }
+
+
+export type SelectedOptions = {
+  [index: string]: boolean;
+};

@@ -2,54 +2,69 @@
 
   <h1>Report</h1>
 
-  <div *ngIf="(settingsObs | async) as settings">
+  <div *ngIf="(analyticsDataFacade.settings$ | async) as settings">
+
+    <!-- settings -->
     <h1><a class="btn btn-secondary" role="button" data-toggle="collapse" href="#options">Options</a></h1>
     <div id="options" class="collapse show">
+      
       <options-selector 
         [name]="'Sensors'" 
-        [defaultSelection]="[]"
-        [options]="multiOptionsSensors"
-        [multiselect]="true"
-        (select)="sensorsSelected($event)"></options-selector>
+        [selected]="settings.sensorsSelected" 
+        [options]="settings.sensors"
+        [multiselect]="true" 
+        (select)="analyticsDataFacade.updateSensorsSelected($event)"></options-selector>
 
       <options-selector 
         [name]="'Metrics'" 
-        [defaultSelection]="[]"
-        [options]="multiOptionsMetrics"
-        [multiselect]="true"
-        (select)="metricsSelected($event)"></options-selector>
+        [options]="settings.metrics" 
+        [selected]="settings.metricsSelected"
+        [multiselect]="true" 
+        (select)="analyticsDataFacade.updateMetricsSelected($event)"></options-selector>
+            <!-- 
 
       <h2 class="mt-4">Paging</h2>
-      <div class="text-center">
+      <!-- <div class="text-center">
         <div class="form-group col-lg-3">
           <label for="formControlRange">groups per page ({{maxGroupInitValue}})</label>
           <input type="range" [(ngModel)]="maxGroupInitValue" (change)="updateSettings('pageLimit', $event.target.value)" min="1" max="50" class="form-control-range" id="formControlRange">
         </div>
+      </div> -->
+
+      <options-selector 
+        [name]="'Pages'" 
+        [selected]="settings.pageSelected"
+        [options]="settings.pages" 
+        (select)="analyticsDataFacade.updatePageSelected($event)"></options-selector>
+    </div>
+
+
+    <!-- debug -->
+    <h1 class="mt-5"><a class="btn btn-secondary" #settingsBtn (click)="settingsBtn.showSettings = !settingsBtn.showSettings">Settings</a></h1>
+    <table *ngIf="settingsBtn.showSettings" class="table table-sm" id="settings">
+      <tr *ngFor="let item of settings | keyvalue">
+        <td>{{item.key}}</td>
+        <td>
+          <!-- <span class="btn btn-outline-dark mr-1 mb-1" *ngFor="let s of getViewValues(item.value)">{{s}}</span> -->
+          <code class="mr-1 mb-1" *ngFor="let s of getViewValues(item.value)">{{s}} | </code>
+        </td>
+      </tr>
+    </table>
+
+    <!-- end: settings -->
+    <div *ngIf="(viewObs | async) as viewData">
+        <div *ngFor="let lowlevelGroupData of viewData" class="mt-5">
+          <h2><span class="badge badge-dark">{{lowlevelGroupData.parentGroupname}}</span></h2>
+          <materialized-sensor *ngFor="let item of multiOptionsSensors | keyvalue" [hidden]="!sensorsEnabled[item.key]"
+            [data]="lowlevelGroupData" [sensorId]="item.key" [metricsEnabled]="metricsEnabled"></materialized-sensor>
+        </div>
       </div>
 
-        <div class="text-center">
-          <button class="btn mr-1" 
-                *ngFor="let pageNumber of settings.pages"
-                (click)="updateSettings('page', pageNumber)"
-                [class.btn-primary]="settings.pageActive == pageNumber"
-                [class.btn-outline-primary]="settings.pageActive != pageNumber"
-                >{{pageNumber + 1}}</button>
-        </div>
-    </div>
   </div>
 
 
-  <div *ngIf="(viewObs | async) as viewData">
-    <div *ngFor="let lowlevelGroupData of viewData" class="mt-5">
-      <h2><span class="badge badge-dark">{{lowlevelGroupData.parentGroupname}}</span></h2>
-      <materialized-sensor 
-      *ngFor="let item of multiOptionsSensors | keyvalue" 
-      [hidden]="!sensorsEnabled[item.key]"
-      [data]="lowlevelGroupData"
-      [sensorId]="item.key"
-      [metricsEnabled]="metricsEnabled"></materialized-sensor>
-    </div>
-  </div>
+
+
 
 
   <!-- only necessary for implementation multiple routes -->

@@ -1,6 +1,10 @@
-<h2 class="mt-4">{{name}}</h2>
-<div class="">
-  <button type="button" (click)="toggleSelection(item.key)" class="btn mr-2"
-    [ngClass]="_selected[item.key] === true ? 'btn-primary' : 'btn-outline-primary'"
-    *ngFor="let item of options | keyvalue">{{options[item.key]}}</button>
+<h2 class="mt-4">{{name}} ({{options?.length}})</h2>
+<div *ngIf="options && visibleOptions">
+  <button *ngIf="isSlicedView" type="button" (click)="click(0)" class="btn mr-2 btn-outline-primary">◀</button>
+  
+  <button type="button" (click)="click(o.index)" class="btn mr-2"
+    [ngClass]="_selected && _selected[o.index] === true ? 'btn-primary' : 'btn-outline-primary'"
+    *ngFor="let o of visibleOptions">{{o.name}}</button>
+  
+  <button *ngIf="isSlicedView" type="button" (click)="click(options.length-1)" class="btn mr-2 btn-outline-primary">▶</button>
 </div>
