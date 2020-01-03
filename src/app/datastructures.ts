@@ -17,6 +17,10 @@ export interface ISensorReportData {
   metrics: IMetricsBySensorByGroup
 }
 
+/**
+ * export Datastructure from analytics
+ * each data point is associated with multiple groups
+ */
 export interface ISensorsLastGroupLevelMetrics {
   parentGroupname: string,
   sensorNames: string[],
