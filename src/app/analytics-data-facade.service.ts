@@ -53,38 +53,7 @@ export class AnalyticsDataFacadeService {
   // execution of context is with the LatestValue of each observable
   settings$ = new ReplaySubject<ISettings>()
   
-  constructor(private http: HttpClient) {
-
-    this.setupSettings()
-
-    this.http.get(json_file).subscribe((data: ISensorReportData) => {
-      console.log('data downloaded')
-      this.countDataSize.next(data.metrics.length)
-
-      // todo
-      this.pageSelected.next([2]),
-      
-      this.metrics.next(data.meta.metrics)
-      this.metricsSelected.next([])
-
-      this.sensors.next(data.meta.sensors)
-      this.sensorsSelected.next([])
-
-      this.limit.next(5)      
-      this.cachedData.next(restructureData(data))
-    })
-
-    combineLatest(this.cachedData, this.pageSelected, this.limit).subscribe(
-      ([data, page, limit]) => {
-        const ixStart = page[0] *limit
-        const ixEnd = page[0] *limit + limit
-
-        this.groups.next(
-          data.slice(ixStart, ixEnd)
-        )
-      }
-    )
-  }
+  constructor(private http: HttpClient) {}
 
   private setupSettings = () => {
     // order is important
@@ -124,6 +93,27 @@ export class AnalyticsDataFacadeService {
         }
       }))
       .subscribe(v => this.settings$.next(v))
+  }
+
+  public downloadAndSetup(url: string) {
+    this.setupSettings();
+    this.http.get(url).subscribe((data: ISensorReportData) => {
+      console.log('data downloaded');
+      this.countDataSize.next(data.metrics.length);
+      // todo
+      this.pageSelected.next([2]),
+        this.metrics.next(data.meta.metrics);
+      this.metricsSelected.next([]);
+      this.sensors.next(data.meta.sensors);
+      this.sensorsSelected.next([]);
+      this.limit.next(5);
+      this.cachedData.next(restructureData(data));
+    });
+    combineLatest(this.cachedData, this.pageSelected, this.limit).subscribe(([data, page, limit]) => {
+      const ixStart = page[0] * limit;
+      const ixEnd = page[0] * limit + limit;
+      this.groups.next(data.slice(ixStart, ixEnd));
+    });
   }
 }
 

@@ -7,12 +7,16 @@ import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
 import { MaterializedSensorComponent } from './materialized-sensor/materialized-sensor.component';
 import { MultiOptionsSelectorComponent } from './options-selector/options-selector.component';
+import { AnalysisDescriptionComponent } from './analysis-description/analysis-description.component';
+import { ReportingComponent } from './reporting/reporting.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MaterializedSensorComponent,
-    MultiOptionsSelectorComponent
+    MultiOptionsSelectorComponent,
+    AnalysisDescriptionComponent,
+    ReportingComponent
   ],
   imports: [
     BrowserModule,
