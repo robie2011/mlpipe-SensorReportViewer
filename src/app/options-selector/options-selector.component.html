@@ -1,9 +1,9 @@
-<h5 class="mt-4 badge badge-secondary">{{name}} ({{options?.length}})</h5>
+<h5 class="mt-4 text-secondary">{{name}} ({{options?.length}})</h5>
 <div *ngIf="options && visibleOptions">
   <button *ngIf="isSlicedView" type="button" (click)="click(0)" class="btn mr-2 btn-outline-primary">◀</button>
   
   <button type="button" (click)="click(o.index)" class="btn mr-2"
-    [ngClass]="_selected && _selected[o.index] === true ? 'btn-primary' : 'btn-outline-primary'"
+    [ngClass]="_selected && _selected[o.index] === true ? 'btn-outline-primary' : 'btn-outline-secondary'"
     *ngFor="let o of visibleOptions">{{o.name}}</button>
   
   <button *ngIf="isSlicedView" type="button" (click)="click(options.length-1)" class="btn mr-2 btn-outline-primary">▶</button>

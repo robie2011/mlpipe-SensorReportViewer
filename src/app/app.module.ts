@@ -10,6 +10,7 @@ import { MultiOptionsSelectorComponent } from './options-selector/options-select
 import { AnalysisDescriptionComponent } from './analysis-description/analysis-description.component';
 import { ReportingComponent } from './reporting/reporting.component';
 
+
 @NgModule({
   declarations: [
     AppComponent,

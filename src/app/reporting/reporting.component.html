@@ -26,14 +26,21 @@
         [selected]="settings.sensorsSelected" 
         [options]="settings.sensors"
         [multiselect]="true" 
-        (select)="analyticsDataFacade.updateSensorsSelected($event)"></options-selector>
+        (select)="analyticsDataFacade.meta['sensors'].updateSelections($event)"></options-selector>
 
       <options-selector 
         [name]="'Metrics'" 
         [options]="settings.metrics" 
         [selected]="settings.metricsSelected"
         [multiselect]="true" 
-        (select)="analyticsDataFacade.updateMetricsSelected($event)"></options-selector>
+        (select)="analyticsDataFacade.meta['metrics'].updateSelections($event)"></options-selector>
+
+      <options-selector 
+        [name]="'Grouping'" 
+        [options]="settings.groupNames" 
+        [selected]="settings.groupNameSelected"
+        [multiselect]="false" 
+        (select)="analyticsDataFacade.meta['groupNames'].updateSelections($event)"></options-selector>
             <!-- 
 
       <h2 class="mt-4">Paging</h2>

@@ -3,12 +3,25 @@ import { HttpClient } from '@angular/common/http';
 import { ISensorsLastGroupLevelMetrics, ISensorReportData, restructureData } from './datastructures';
 import { FormControl } from '@angular/forms';
 import { BehaviorSubject, Subject, combineLatest, Observable, ReplaySubject } from 'rxjs';
-import { map, distinctUntilChanged, distinctUntilKeyChanged, tap, shareReplay } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
+import "array-flat-polyfill"
+
+// map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
+
 
 export type SelectedOptions = Array<number>
 
-//const json_file = "./assets/export_data.json"
-const json_file = "./assets/export_data_empa.json"
+function getArrayIndexes<T>(arr: Array<T>) {
+  return arr.map((v, ix) => ix)
+}
+
+
+function flatMap<T,U>(arr: Array<T>, cb: (x: T) => Array<U>): Array<U>{
+  let result = []
+  arr.map(x => cb(x))
+  .forEach(xs => result.push(...xs))
+  return result
+}
 
 export interface AnalyticResultState {
   activePage: number,
@@ -21,27 +34,32 @@ export interface AnalyticResultState {
   result: ISensorsLastGroupLevelMetrics[]
 }
 
+class OptionsSubject {
+  readonly selectedIds = new Subject<number[]>()
+  readonly names = new Subject<string[]>()
+  readonly updateSelections = (v: number[]) => this.selectedIds.next(v)
+}
+
+
 @Injectable({
   providedIn: 'root'
 })
 export class AnalyticsDataFacadeService {
   private cachedData = new Subject<ISensorsLastGroupLevelMetrics[]>()
+  public meta = {
+    "sensors": new OptionsSubject(),
+    "metrics": new OptionsSubject(),
+    "groupNames": new OptionsSubject()
+  }
 
   private pageSelected = new Subject<number[]>()
-  updatePageSelected = (value: number[]) => this.pageSelected.next(value)
-
-  private metricsSelected = new Subject<string[]>()
-  updateMetricsSelected = (values: string[]) => this.metricsSelected.next(values)
-
-  private sensorsSelected = new Subject<string[]>()
-  updateSensorsSelected = (values: string[]) => this.sensorsSelected.next(values)
+  updatePageSelected = (v: number[]) => this.pageSelected.next(v)
 
   private limit = new Subject<number>()
-  updateLimit = (value: number) => this.limit.next(value)
+  updateLimit = (v: number) => this.limit.next(v)
 
-  private metrics = new Subject<string[]>()
-  private sensors = new Subject<string[]>()
   private groups = new Subject<ISensorsLastGroupLevelMetrics[]>()
+
   private countDataSize = new Subject<number>()
 
   private pages = combineLatest(this.cachedData, this.limit).pipe(
@@ -52,10 +70,28 @@ export class AnalyticsDataFacadeService {
   // it waits till we have values for all observable
   // execution of context is with the LatestValue of each observable
   settings$ = new ReplaySubject<ISettings>()
+  meta$ = new ReplaySubject<{}>()
   
   isLoading = false
 
   constructor(private http: HttpClient) {
+    /**
+     * getting two observables from OptionSubject
+     * and mapping to flat object with key containing name 
+     * resp. key and suffix "Selected" and populating result through $meta subject
+     */
+    combineLatest(
+      flatMap(Object.keys(this.meta), (k: string) => {
+        let optionSubject = this.meta[k] as OptionsSubject
+        return [optionSubject.names, optionSubject.selectedIds]
+      })).pipe(map(xs => {
+        let result = {}
+        flatMap(Object.keys(this.meta), (key: string) => {
+          return [key, `${key}Selected`]
+        }).forEach((key: string, ix: number) => result[key] = xs[ix])
+
+        return result
+      })).subscribe(xs => this.meta$.next(xs))
   }
 
   private setupSettings = () => {
@@ -64,35 +100,30 @@ export class AnalyticsDataFacadeService {
       this.pages, 
       this.pageSelected,
       
-      this.metrics,
-      this.metricsSelected,
-      
-      this.sensors,
-      this.sensorsSelected,
-      
       this.limit,
-      this.groups
+      this.groups,
+      this.meta$
       ).pipe(map<any[], ISettings>(
         ([pages, 
           pageSelected, 
-          metrics, 
-          metricsSelected, 
-          sensors, 
-          sensorsSelected, 
           limit, 
-          groups]) => {
+          groups,
+          meta]) => {
         return {
           pages: pages,
           pageSelected: pageSelected,
   
-          metrics: metrics,
-          metricsSelected: metricsSelected,
+          metrics: meta['metrics'],
+          metricsSelected: meta['metricsSelected'],
   
-          sensors: sensors,
-          sensorsSelected: sensorsSelected,
+          sensors: meta['sensors'],
+          sensorsSelected: meta['sensorsSelected'],
   
           limit: limit,
-          groups: groups
+          groups: groups,
+
+          groupNames: meta['groupNames'],
+          groupNameSelected: meta['groupNamesSelected']
         }
       }))
       .subscribe(v => this.settings$.next(v))
@@ -107,10 +138,15 @@ export class AnalyticsDataFacadeService {
       this.countDataSize.next(data.metrics.length);
       // todo
       this.pageSelected.next([2])
-      this.metrics.next(data.meta.metrics);
-      this.metricsSelected.next([]);
-      this.sensors.next(data.meta.sensors);
-      this.sensorsSelected.next([]);
+      this.meta['metrics'].names.next(data.meta.metrics)
+      this.meta['metrics'].selectedIds.next(getArrayIndexes(data.meta.metrics))
+      
+      this.meta['sensors'].names.next(data.meta.sensors)
+      this.meta['sensors'].selectedIds.next(getArrayIndexes(data.meta.sensors))
+
+      this.meta['groupNames'].names.next(data.meta.groupers)
+      this.meta['groupNames'].selectedIds.next([0])
+
       this.limit.next(5);
       this.cachedData.next(restructureData(data));
     });
@@ -135,4 +171,7 @@ interface ISettings {
 
   limit: number;
   groups: ISensorsLastGroupLevelMetrics[];
+
+  groupNames: string[],
+  groupNameSelected: number
 }
