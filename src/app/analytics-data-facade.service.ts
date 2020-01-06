@@ -5,7 +5,7 @@ import { FormControl } from '@angular/forms';
 import { BehaviorSubject, Subject, combineLatest, Observable, ReplaySubject } from 'rxjs';
 import { map, distinctUntilChanged, distinctUntilKeyChanged, tap, shareReplay } from 'rxjs/operators';
 
-export type SelectedOptions = { [index: string]: number }
+export type SelectedOptions = Array<number>
 
 //const json_file = "./assets/export_data.json"
 const json_file = "./assets/export_data_empa.json"
@@ -53,7 +53,10 @@ export class AnalyticsDataFacadeService {
   // execution of context is with the LatestValue of each observable
   settings$ = new ReplaySubject<ISettings>()
   
-  constructor(private http: HttpClient) {}
+  isLoading = false
+
+  constructor(private http: HttpClient) {
+  }
 
   private setupSettings = () => {
     // order is important
@@ -95,14 +98,16 @@ export class AnalyticsDataFacadeService {
       .subscribe(v => this.settings$.next(v))
   }
 
-  public downloadAndSetup(url: string) {
+  public downloadAndSetup(name: string) {
+    this.isLoading = true
+    let url = `http://localhost:5000/api/analytics/${name}`
     this.setupSettings();
     this.http.get(url).subscribe((data: ISensorReportData) => {
       console.log('data downloaded');
       this.countDataSize.next(data.metrics.length);
       // todo
-      this.pageSelected.next([2]),
-        this.metrics.next(data.meta.metrics);
+      this.pageSelected.next([2])
+      this.metrics.next(data.meta.metrics);
       this.metricsSelected.next([]);
       this.sensors.next(data.meta.sensors);
       this.sensorsSelected.next([]);
@@ -113,6 +118,7 @@ export class AnalyticsDataFacadeService {
       const ixStart = page[0] * limit;
       const ixEnd = page[0] * limit + limit;
       this.groups.next(data.slice(ixStart, ixEnd));
+      this.isLoading = false
     });
   }
 }

@@ -4,7 +4,19 @@
     <span><a class="btn btn-secondary" role="button" data-toggle="collapse" href="#options">Options</a></span>
     Report
   </h1>
-  <div id="options" class="collapse show bg-light text-white border border-dark rounded p-3" *ngIf="(analyticsDataFacade.settings$ | async) as settings">
+
+  <div class="alert alert-warning cursor-pointer" (click)="reload()" *ngIf="needReload">
+  New analytics configuration received. Click here to reload.</div>
+
+  <div class="text-center mt-5" *ngIf="analyticsDataFacade.isLoading">
+    <div class="spinner-border" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+
+
+  <div id="options" class="collapse show bg-light text-white border border-dark rounded p-3" 
+    *ngIf="!analyticsDataFacade.isLoading && (analyticsDataFacade.settings$ | async) as settings">
 
     <!-- settings -->
     <div>
