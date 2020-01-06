@@ -1,12 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ISensorsLastGroupLevelMetrics, ISensorReportData, restructureData } from './datastructures';
-import { FormControl } from '@angular/forms';
-import { BehaviorSubject, Subject, combineLatest, Observable, ReplaySubject } from 'rxjs';
+import { Subject, combineLatest, ReplaySubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import "array-flat-polyfill"
-
-// map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
 
 
 export type SelectedOptions = Array<number>
@@ -51,6 +47,8 @@ export class AnalyticsDataFacadeService {
     "metrics": new OptionsSubject(),
     "groupNames": new OptionsSubject()
   }
+
+  private metricsAggregationFuncs: {(x: number, y: number): number}[] = []
 
   private pageSelected = new Subject<number[]>()
   updatePageSelected = (v: number[]) => this.pageSelected.next(v)
@@ -147,9 +145,16 @@ export class AnalyticsDataFacadeService {
       this.meta['groupNames'].names.next(data.meta.groupers)
       this.meta['groupNames'].selectedIds.next([0])
 
+      this.metricsAggregationFuncs = data.meta.metricsAggregationFunc.map(eval)
+
+
       this.limit.next(5);
+      this.pageSelected.next([0])
       this.cachedData.next(restructureData(data));
     });
+
+    // selecting first group for display
+  
     combineLatest(this.cachedData, this.pageSelected, this.limit).subscribe(([data, page, limit]) => {
       const ixStart = page[0] * limit;
       const ixEnd = page[0] * limit + limit;

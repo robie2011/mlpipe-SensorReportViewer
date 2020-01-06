@@ -9,7 +9,8 @@ export interface ISensorReportData {
     groups: number[][],
     metrics: string[],
     sensors: string[],
-    prettyGroupnames: string[][] // level 0: group id, level 1: mapping
+    prettyGroupnames: string[][], // level 0: group id, level 1: mapping
+    metricsAggregationFunc: string[]
   }
   // level 0: group id
   // level 1: sensor id
@@ -29,28 +30,28 @@ export interface ISensorsLastGroupLevelMetrics {
   metricByAnalyzerBySensorByGroup: number[][][]
 }
 
+// export function aggregate(data: ISensorReportData): ISensorsLastGroupLevelMetrics[] {
+//   if (data.meta.groupers.length === 1) {
+//     return restructureData(data)
+//   }
+// }
+
 export function restructureData(data: ISensorReportData): ISensorsLastGroupLevelMetrics[] {
   let result: ISensorsLastGroupLevelMetrics[] = []
   let lastParentGroup: ISensorsLastGroupLevelMetrics
-  let prettyGroupnameMapper = {}
-  data.meta.prettyGroupnames.forEach((group, groupId) => {
-    if (group.length > 0) {
-      prettyGroupnameMapper[groupId] = Object.assign({}, group)
-    }
-  })
 
-  for (let groupId = 0; groupId < data.meta.groups.length; groupId++) {
-    const group: string[] = []
-    for (let levelId = 0; levelId < data.meta.groups[groupId].length; levelId++) {
-      const groupLevelValue = data.meta.groups[groupId][levelId]
-      if (prettyGroupnameMapper[levelId] !== undefined) {
-        group.push(prettyGroupnameMapper[levelId][groupLevelValue])
-      } else {
-        group.push(groupLevelValue.toString())
-      }
+  // data.meta.groups is an array of arrays
+  // each array represents value of multiple groups e.g. [2017, 7, 0]
+  // we try to map these numberbased group value to pretty name (if possible)
+  for (let combinedGroupId = 0; combinedGroupId < data.meta.groups.length; combinedGroupId++) {
+    const combinedGroupPretty: string[] = []
+    for (let groupLevelId = 0; groupLevelId < data.meta.groups[combinedGroupId].length; groupLevelId++) {
+      const groupValue = data.meta.groups[combinedGroupId][groupLevelId]
+      const elementPrettyNameOrNull = (data.meta.prettyGroupnames[groupLevelId] || {})[groupValue]
+      combinedGroupPretty.push(elementPrettyNameOrNull || groupValue.toString())
     }
 
-    let parentGroup: string[] = group.slice()
+    let parentGroup: string[] = combinedGroupPretty.slice()
     let lowlevelGroupname = parentGroup.pop().toString()
     //let currentParentGroupHash = parentGroup.join(" ⮀ ")
     let currentParentGroupHash = parentGroup.join(" / ")
@@ -69,7 +70,7 @@ export function restructureData(data: ISensorReportData): ISensorsLastGroupLevel
 
     lastParentGroup.groupNames.push(lowlevelGroupname)
     lastParentGroup.metricByAnalyzerBySensorByGroup.push(
-      data.metrics[groupId]
+      data.metrics[combinedGroupId]
     )
   }
 
