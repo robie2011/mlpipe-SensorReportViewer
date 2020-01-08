@@ -1,8 +1,8 @@
 export type IMetricsBySensorByGroup = number[][][]
 
-export interface ISensorReportData {
+export interface ISensorReportDataDeprecated {
   meta: {
-    groupers: [string],
+    groupers: string[],
 
     // level 0: group id
     // level 1: combined group value
@@ -30,13 +30,7 @@ export interface ISensorsLastGroupLevelMetrics {
   metricByAnalyzerBySensorByGroup: number[][][]
 }
 
-// export function aggregate(data: ISensorReportData): ISensorsLastGroupLevelMetrics[] {
-//   if (data.meta.groupers.length === 1) {
-//     return restructureData(data)
-//   }
-// }
-
-export function restructureData(data: ISensorReportData): ISensorsLastGroupLevelMetrics[] {
+export function restructureData(data: ISensorReportDataDeprecated): ISensorsLastGroupLevelMetrics[] {
   let result: ISensorsLastGroupLevelMetrics[] = []
   let lastParentGroup: ISensorsLastGroupLevelMetrics
 

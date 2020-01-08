@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ISensorsLastGroupLevelMetrics, ISensorReportData, restructureData } from './datastructures';
+import { ISensorsLastGroupLevelMetrics, ISensorReportDataDeprecated, restructureData } from './datastructures';
 import { Subject, combineLatest, ReplaySubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { CachedData, DataDownloaderService } from './data-downloader.service';
+import { SensorViewData } from './data-processor';
 
 
 export type SelectedOptions = Array<number>
@@ -12,7 +14,7 @@ function getArrayIndexes<T>(arr: Array<T>) {
 }
 
 
-function flatMap<T,U>(arr: Array<T>, cb: (x: T) => Array<U>): Array<U>{
+export function flatMap<T,U>(arr: Array<T>, cb: (x: T) => Array<U>): Array<U>{
   let result = []
   arr.map(x => cb(x))
   .forEach(xs => result.push(...xs))
@@ -41,43 +43,33 @@ class OptionsSubject {
   providedIn: 'root'
 })
 export class AnalyticsDataFacadeService {
-  private cachedData = new Subject<ISensorsLastGroupLevelMetrics[]>()
+  private cachedData = new Subject<CachedData>()
+  private groups = new Subject<SensorViewData>()
   public meta = {
     "sensors": new OptionsSubject(),
     "metrics": new OptionsSubject(),
     "groupNames": new OptionsSubject()
   }
 
-  private metricsAggregationFuncs: {(x: number, y: number): number}[] = []
-
-  private pageSelected = new Subject<number[]>()
-  updatePageSelected = (v: number[]) => this.pageSelected.next(v)
-
-  private limit = new Subject<number>()
-  updateLimit = (v: number) => this.limit.next(v)
-
-  private groups = new Subject<ISensorsLastGroupLevelMetrics[]>()
-
-  private countDataSize = new Subject<number>()
-
-  private pages = combineLatest(this.cachedData, this.limit).pipe(
-    map(([restructuredGroups, limit]) => 
-      Array(Math.ceil(restructuredGroups.length / limit)).fill(1).map((_, i) => (i+1).toString()))
-  )
-
   // it waits till we have values for all observable
   // execution of context is with the LatestValue of each observable
   settings$ = new ReplaySubject<ISettings>()
   meta$ = new ReplaySubject<{}>()
+  groups$ = new ReplaySubject<SensorViewData>()
   
   isLoading = false
 
-  constructor(private http: HttpClient) {
+  constructor(private downloader: DataDownloaderService) {
     /**
      * getting two observables from OptionSubject
      * and mapping to flat object with key containing name 
      * resp. key and suffix "Selected" and populating result through $meta subject
      */
+    console.log("meta$ subject will wait for: ")
+    Object.keys(this.meta).forEach(name => {
+      console.log("\t", name, `${name}Selected`)
+    })
+
     combineLatest(
       flatMap(Object.keys(this.meta), (k: string) => {
         let optionSubject = this.meta[k] as OptionsSubject
@@ -94,88 +86,68 @@ export class AnalyticsDataFacadeService {
 
   private setupSettings = () => {
     // order is important
+    this.groups.subscribe(d => this.groups$.next(d))
+
     combineLatest(
-      this.pages, 
-      this.pageSelected,
-      
-      this.limit,
-      this.groups,
       this.meta$
       ).pipe(map<any[], ISettings>(
-        ([pages, 
-          pageSelected, 
-          limit, 
-          groups,
-          meta]) => {
+        ([meta]) => {
         return {
-          pages: pages,
-          pageSelected: pageSelected,
-  
           metrics: meta['metrics'],
           metricsSelected: meta['metricsSelected'],
   
           sensors: meta['sensors'],
           sensorsSelected: meta['sensorsSelected'],
-  
-          limit: limit,
-          groups: groups,
 
           groupNames: meta['groupNames'],
-          groupNameSelected: meta['groupNamesSelected']
+          groupNameSelected: meta['groupNamesSelected'],
         }
       }))
       .subscribe(v => this.settings$.next(v))
   }
 
-  public downloadAndSetup(name: string) {
+  public downloadAndSetup = (name: string) => {
     this.isLoading = true
-    let url = `http://localhost:5000/api/analytics/${name}`
+    
+    
     this.setupSettings();
-    this.http.get(url).subscribe((data: ISensorReportData) => {
+    
+    this.downloader.get(name).subscribe(data => {
       console.log('data downloaded');
-      this.countDataSize.next(data.metrics.length);
-      // todo
-      this.pageSelected.next([2])
-      this.meta['metrics'].names.next(data.meta.metrics)
-      this.meta['metrics'].selectedIds.next(getArrayIndexes(data.meta.metrics))
-      
-      this.meta['sensors'].names.next(data.meta.sensors)
-      this.meta['sensors'].selectedIds.next(getArrayIndexes(data.meta.sensors))
 
-      this.meta['groupNames'].names.next(data.meta.groupers)
+      // todo
+      this.meta['metrics'].names.next(data.metrics)
+      this.meta['metrics'].selectedIds.next(getArrayIndexes(data.metrics))
+      
+      this.meta['sensors'].names.next(data.sensors)
+      this.meta['sensors'].selectedIds.next([0])
+
+      this.meta['groupNames'].names.next(data.groupers)
       this.meta['groupNames'].selectedIds.next([0])
 
-      this.metricsAggregationFuncs = data.meta.metricsAggregationFunc.map(eval)
-
-
-      this.limit.next(5);
-      this.pageSelected.next([0])
-      this.cachedData.next(restructureData(data));
+      this.cachedData.next(data);
     });
 
     // selecting first group for display
   
-    combineLatest(this.cachedData, this.pageSelected, this.limit).subscribe(([data, page, limit]) => {
-      const ixStart = page[0] * limit;
-      const ixEnd = page[0] * limit + limit;
-      this.groups.next(data.slice(ixStart, ixEnd));
+    combineLatest(
+      this.cachedData, 
+      this.meta["sensors"].selectedIds, 
+      this.meta["groupNames"].selectedIds).subscribe(([cachedData, [selectedSensorId], [selectedPartitionerId]]) => {
+        console.log(`viewData parameters: sensorId=${selectedSensorId}, partitionerId=${selectedPartitionerId}`)
+
+      this.groups.next(cachedData.getViewData(selectedPartitionerId, selectedSensorId));
       this.isLoading = false
     });
   }
 }
 
 interface ISettings {
-  pages: string[],
-  pageSelected: number,
-
   metrics: string[],
   metricsSelected: SelectedOptions
 
   sensors: string[],
   sensorsSelected: SelectedOptions
-
-  limit: number;
-  groups: ISensorsLastGroupLevelMetrics[];
 
   groupNames: string[],
   groupNameSelected: number

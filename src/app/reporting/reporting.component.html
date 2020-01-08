@@ -40,23 +40,7 @@
         [options]="settings.groupNames" 
         [selected]="settings.groupNameSelected"
         [multiselect]="false" 
-        (select)="analyticsDataFacade.meta['groupNames'].updateSelections($event)"></options-selector>
-            <!-- 
-
-      <h2 class="mt-4">Paging</h2>
-      <div class="text-center">
-        <div class="form-group col-lg-3">
-          <label for="formControlRange">groups per page ({{maxGroupInitValue}})</label>
-          <input type="range" [(ngModel)]="maxGroupInitValue" (change)="updateSettings('pageLimit', $event.target.value)" min="1" max="50" class="form-control-range" id="formControlRange">
-        </div>
-      </div> -->
-
-      <options-selector 
-        [name]="'Pages'" 
-        [selected]="settings.pageSelected"
-        [options]="settings.pages" 
-        (select)="analyticsDataFacade.updatePageSelected($event)"></options-selector>
-    
+        (select)="analyticsDataFacade.meta['groupNames'].updateSelections($event)"></options-selector>    
 
     <!-- debug -->
     <h1 class="mt-5"><a class="btn btn-secondary" #settingsBtn (click)="settingsBtn.showSettings = !settingsBtn.showSettings">Debug Settings</a></h1>
@@ -75,11 +59,10 @@
 
   </div>
 
-  <div *ngIf="(analyticsDataFacade.settings$ | async) as settings">
-      <div *ngFor="let lowlevelGroupData of settings.groups" class="mt-5">
-        <h2><span class="badge badge-dark">{{lowlevelGroupData.parentGroupname}}</span></h2>
-        <materialized-sensor *ngFor="let sensorId of settings.sensorsSelected"
-          [data]="lowlevelGroupData" [sensorId]="sensorId" [metricsEnabled]="settings.metricsSelected"></materialized-sensor>
+  <div *ngIf="(groupsAndSettings | async) as data">
+      <div class="mt-5">
+        <h2><span class="badge badge-dark">ParentName</span></h2>
+        <materialized-sensor [data]="data[0]" [metricsEnabled]="data[1].metricsSelected"></materialized-sensor>
       </div>
-    </div>
+  </div>
 </div>

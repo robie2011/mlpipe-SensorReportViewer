@@ -25,7 +25,7 @@ export class MultiOptionsSelectorComponent {
   isSlicedView = false
 
   private _selectedArray: number[]
-  private _selected: SelectedOptions
+  _selected: SelectedOptions
   
   @Input()
   set selected(indexes: number[]){

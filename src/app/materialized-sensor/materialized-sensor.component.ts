@@ -1,6 +1,7 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { ISensorsLastGroupLevelMetrics, mapToSelectedOptions } from '../datastructures';
+import { Component, Input } from '@angular/core';
+import { mapToSelectedOptions } from '../datastructures';
 import { SelectedOptions } from "../datastructures";
+import { SensorViewData } from '../data-processor';
 
 @Component({
   selector: 'materialized-sensor',
@@ -8,10 +9,7 @@ import { SelectedOptions } from "../datastructures";
   styleUrls: ['./materialized-sensor.component.scss']
 })
 export class MaterializedSensorComponent {
-  private _metricsEnabled: SelectedOptions
-
-  @Input()
-  sensorId: number;
+  _metricsEnabled: SelectedOptions;
 
   @Input()
   set metricsEnabled(indexes: number[]){
@@ -19,6 +17,5 @@ export class MaterializedSensorComponent {
   }
   
   @Input()
-  data: ISensorsLastGroupLevelMetrics
-  
+  data: SensorViewData
 }

@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { AnalyticsDataFacadeService } from '../analytics-data-facade.service';
 import { ActivatedRoute } from '@angular/router';
 import io from "socket.io-client";
+import { combineLatest } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 const VIEW_UPDATE_DELAY = 500
 //const json_file = "./assets/export_data.json"
@@ -17,6 +19,12 @@ const json_file = "./assets/export_data_empa.json"
   styleUrls: ['./reporting.component.scss']
 })
 export class ReportingComponent implements OnInit {
+
+  groupsAndSettings = combineLatest(
+    this.analyticsDataFacade.groups$,
+    this.analyticsDataFacade.settings$
+  ).pipe(tap(console.log))
+
   constructor(
     public analyticsDataFacade: AnalyticsDataFacadeService, 
     private route: ActivatedRoute) { }
@@ -29,6 +37,7 @@ export class ReportingComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.groupsAndSettings
     this.name = this.route.snapshot.paramMap.get('name')
     this.reload()
 
