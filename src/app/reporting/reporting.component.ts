@@ -3,7 +3,7 @@ import { AnalyticsDataFacadeService } from '../analytics-data-facade.service';
 import { ActivatedRoute } from '@angular/router';
 import io from "socket.io-client";
 import { combineLatest } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, map } from 'rxjs/operators';
 
 const VIEW_UPDATE_DELAY = 500
 //const json_file = "./assets/export_data.json"
@@ -24,6 +24,15 @@ export class ReportingComponent implements OnInit {
     this.analyticsDataFacade.sensorData$,
     this.analyticsDataFacade.settings$
   ).pipe(tap(console.log))
+
+  filtersAndFilterSelections$ = combineLatest(
+    // getting filters without filter for main group
+    this.analyticsDataFacade.sensorData$.pipe(
+      map(d => d.filters.filter(f => f.id !== d.mainGroupId))),
+    
+    // getting filter selections
+    this.analyticsDataFacade.dynamicFilterOptions$
+  )
 
   constructor(
     public analyticsDataFacade: AnalyticsDataFacadeService, 
@@ -58,4 +67,10 @@ export class ReportingComponent implements OnInit {
     this.needReload = false
   }
 
+  updateFilter(filterId: number, selectionIds: number[]){
+    this.analyticsDataFacade.filterIdAndSelectionsUpdater.next(
+      [filterId, selectionIds])
+  }
+
+  
 }

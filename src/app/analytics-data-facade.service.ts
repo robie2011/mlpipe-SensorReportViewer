@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Subject, combineLatest, ReplaySubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { CachedData, DataDownloaderService } from './data-downloader.service';
 import { SensorViewData } from './data-processor';
-import { getArrayIndexes, flatMap } from "./utils";
-import { ISettings } from "./models";
+import { getArrayIndexes, flatMap, KeyValueCache, KeyValuelistMap } from "./utils";
+import { ISettings, SelectedOptionsArray } from "./models";
 
 
 
@@ -15,10 +15,12 @@ class OptionsSubject {
 }
 
 
+
 @Injectable({
   providedIn: 'root'
 })
 export class AnalyticsDataFacadeService {
+  private filterKeyValueCache = new KeyValueCache()
   private cachedData = new Subject<CachedData>()
   private sensorData = new Subject<SensorViewData>()
   public meta = {
@@ -32,12 +34,32 @@ export class AnalyticsDataFacadeService {
   settings$: Observable<ISettings>
   meta$ = new ReplaySubject<{}>()
   sensorData$: Observable<SensorViewData>
+  // filters$: Observable<Filter[]>
+  
+  dynamicFilterOptions$: Observable<KeyValuelistMap>
+  filterIdAndSelectionsUpdater = new ReplaySubject<any[]>()
   
   isLoading = false
 
   constructor(private downloader: DataDownloaderService) {
     this.sensorData$ = this.sensorData.asObservable()
 
+    // this.filters$ = combineLatest(this.cachedData, this.meta.groupNames.selectedIds).pipe(
+    //   map(
+    //     ([data, [mainPartitionerId]]) => {
+    //       return data.filters.filter(f => f.id !== mainPartitionerId)
+    //   })
+    // )
+
+    this.dynamicFilterOptions$ = this.filterIdAndSelectionsUpdater.pipe(
+      tap(x => console.log("filter update received", x)),
+      map(
+        ([filterId, selectedValueIds]) => 
+        this.filterKeyValueCache.cacheAndReturn(
+          filterId as number, 
+          selectedValueIds as number[]))
+    )
+    
     this.meta$AggregationSetup()
     this.settings$AggregationSetup()
     this.sensorData$AggregationSetup()
@@ -90,10 +112,22 @@ export class AnalyticsDataFacadeService {
     combineLatest(
       this.cachedData, 
       this.meta["sensors"].selectedIds, 
-      this.meta["groupNames"].selectedIds).subscribe(([cachedData, [selectedSensorId], [selectedPartitionerId]]) => {
+      this.meta["groupNames"].selectedIds,
+      this.dynamicFilterOptions$,
+      ).subscribe(([cachedData, [selectedSensorId], [selectedPartitionerId], filterSelections]) => {
         console.log(`viewData parameters: sensorId=${selectedSensorId}, partitionerId=${selectedPartitionerId}`)
+        console.log("filter keys (should be numbers ):", Object.keys(filterSelections))
+        let partitionerToPartitionIx = Object.keys(filterSelections).map(k => filterSelections[k])
+        console.log("partitionerToPartitionIx", partitionerToPartitionIx)
 
-      this.sensorData.next(cachedData.getViewData(selectedPartitionerId, selectedSensorId));
+      // reset main group filter
+      partitionerToPartitionIx[selectedPartitionerId] = []
+      
+      this.sensorData.next(
+        cachedData.getViewData(
+          selectedPartitionerId, 
+          selectedSensorId, 
+          partitionerToPartitionIx));
       this.isLoading = false
     })
   }
@@ -104,6 +138,11 @@ export class AnalyticsDataFacadeService {
     this.downloader.get(name).subscribe(data => {
 
       this.cachedData.next(data);
+
+      data.groupers.forEach((v, ix) => {
+        this.filterIdAndSelectionsUpdater.next([ix, []])
+      })
+      
 
       // auto seelct new parameters according new data
       this.meta['metrics'].names.next(data.metrics)
