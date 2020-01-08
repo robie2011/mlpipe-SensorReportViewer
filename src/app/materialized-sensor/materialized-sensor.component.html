@@ -1,9 +1,5 @@
 <h3 class="mt-3"><i class="fas fa-rss"></i><span class="badge badge-light"> {{data.sensorName}}</span></h3>
 
-<div>
-{{data | json}}
-</div>
-
 <table class="table table-sm">
   <thead>
     <tr>
@@ -17,7 +13,7 @@
       <th scope="row">{{metricName}}</th>
 
       <td class="text-monospace" *ngFor="let groupName of data.groupNames; let groupId = index">
-        {{data.metricsByGroup[metricId][groupId] | number: '.2-2'}}</td>
+        {{data.metricsByGroup[groupId][metricId] | number: '.2-2' }}</td> <!-- nans will be shown as empty space -->
 
     </tr>
   </tbody>

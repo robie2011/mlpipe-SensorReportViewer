@@ -110,7 +110,7 @@ export class DataProcessor {
       rawData.meta.metricsAggregationFunc.map(eval))
 
     const groupNames = aggregations.mainPartitionerIds.map(
-      (value, ix) => rawData.meta.prettyGroupnames[mainPartitionerId][ix] || value.toString())
+      (value, ix) => rawData.meta.prettyGroupnames[mainPartitionerId][value] || value.toString())
     return {
       metricNames: rawData.meta.metrics,
       groupNames: groupNames,

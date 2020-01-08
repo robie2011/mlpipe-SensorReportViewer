@@ -25,7 +25,7 @@
         [name]="'Sensors'" 
         [selected]="settings.sensorsSelected" 
         [options]="settings.sensors"
-        [multiselect]="true" 
+        [multiselect]="false" 
         (select)="analyticsDataFacade.meta['sensors'].updateSelections($event)"></options-selector>
 
       <options-selector 

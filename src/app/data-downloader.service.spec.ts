@@ -23,7 +23,7 @@ describe('data-downloader', () => {
             meta: {
                 groupers: ["grouper1"],
                 groupToPartitionerToPartition: [[10], [10]],
-                prettyGroupnames: [["zehn"]],
+                prettyGroupnames: [],
                 sensors: ["s0", "s1"],
                 metrics: ["m0", "m1"],
                 metricsAggregationFunc: [""]
@@ -39,6 +39,8 @@ describe('data-downloader', () => {
                 ]
             ]
         }
+        data.meta.prettyGroupnames[0] = new Array(30)
+        data.meta.prettyGroupnames[0][10] = "zehn"
 
         const expected: SensorViewData = {
                 groupNames: ["zehn"],
@@ -59,7 +61,7 @@ describe('data-downloader', () => {
             meta: {
                 groupers: ["grouper1"],
                 groupToPartitionerToPartition: [[10], [10]],
-                prettyGroupnames: [["zehn"]],
+                prettyGroupnames: [],
                 sensors: ["s0", "s1"],
                 metrics: ["m0", "m1"],
                 metricsAggregationFunc: [
@@ -78,6 +80,8 @@ describe('data-downloader', () => {
                 ]
             ]
         }
+        data.meta.prettyGroupnames[0] = new Array(30)
+        data.meta.prettyGroupnames[0][10] = "zehn"
 
         const expected: SensorViewData = {
                 groupNames: ["zehn"],
@@ -97,7 +101,7 @@ describe('data-downloader', () => {
             meta: {
                 groupers: ["grouper1"],
                 groupToPartitionerToPartition: [[10], [10], [20]],
-                prettyGroupnames: [["zehn", "zwanzig"]],
+                prettyGroupnames: [],
                 sensors: ["s0", "s1"],
                 metrics: ["m0", "m1"],
                 metricsAggregationFunc: [
@@ -120,6 +124,9 @@ describe('data-downloader', () => {
                 ]
             ]
         }
+        data.meta.prettyGroupnames[0] = new Array(30)
+        data.meta.prettyGroupnames[0][10] = "zehn"
+        data.meta.prettyGroupnames[0][20] = "zwanzig"
 
         const expected: SensorViewData = {
                 groupNames: ["zehn", "zwanzig"],
@@ -141,7 +148,7 @@ describe('data-downloader', () => {
             meta: {
                 groupers: ["grouper1"],
                 groupToPartitionerToPartition: [[10], [10], [20]],
-                prettyGroupnames: [["zehn", "zwanzig"]],
+                prettyGroupnames: [],
                 sensors: ["s0", "s1"],
                 metrics: ["m0", "m1"],
                 metricsAggregationFunc: [
@@ -164,6 +171,9 @@ describe('data-downloader', () => {
                 ]
             ]
         }
+        data.meta.prettyGroupnames[0] = new Array(30)
+        data.meta.prettyGroupnames[0][10] = "zehn"
+        data.meta.prettyGroupnames[0][20] = "zwanzig"
 
         const expected: SensorViewData = {
                 groupNames: ["zehn", "zwanzig"],
