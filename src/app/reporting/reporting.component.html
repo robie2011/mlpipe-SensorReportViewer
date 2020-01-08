@@ -61,7 +61,6 @@
 
   <div *ngIf="(groupsAndSettings | async) as data">
       <div class="mt-5">
-        <h2><span class="badge badge-dark">ParentName</span></h2>
         <materialized-sensor [data]="data[0]" [metricsEnabled]="data[1].metricsSelected"></materialized-sensor>
       </div>
   </div>
