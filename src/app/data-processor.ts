@@ -30,7 +30,8 @@ export class SensorViewData {
     public readonly metricNames: string[],
     public readonly metricsByGroup: number[][],
     public readonly filters: Filter[],
-    public readonly mainGroupId: number) { }
+    public readonly mainGroupId: number,
+    public readonly metricsWithoutAggregators: string[]) { }
 }
 
 
@@ -144,13 +145,20 @@ export class DataProcessor {
 
     const groupNames = aggregations.mainPartitionerIds.map(
       (value, ix) => rawData.meta.prettyGroupnames[mainPartitionerId][value] || value.toString())
+
+    const metricsWithoutAggregators = rawData.meta.metricsAggregationFunc.map((v, ix) => {
+      if (v.length > 0) return null
+      return rawData.meta.metrics[ix]
+    }).filter(x => x !== null)
+
     return {
       metricNames: rawData.meta.metrics,
       groupNames: groupNames,
       sensorName: rawData.meta.sensors[sensorId],
       metricsByGroup: aggregations.metricsByGroup,
       filters: filters,
-      mainGroupId: mainPartitionerId
+      mainGroupId: mainPartitionerId,
+      metricsWithoutAggregators: metricsWithoutAggregators
     }
   }
 

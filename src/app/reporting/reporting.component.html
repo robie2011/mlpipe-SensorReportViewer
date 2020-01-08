@@ -70,6 +70,13 @@
     </div>
   </div>
 
+  <div *ngIf="(analyticsDataFacade.sensorData$ | async) as sdata">
+    <div *ngIf="sdata.metricsWithoutAggregators" class="alert alert-warning mt-5">
+      Note: Following metrics do not have aggregation functions and can not be aggregated and WebUI: 
+      {{sdata.metricsWithoutAggregators.join(", ")}}
+    </div>
+  </div>
+
 
   <div *ngIf="(groupsAndSettings | async) as data">
       <div class="mt-5">
