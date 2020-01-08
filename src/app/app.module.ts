@@ -1,7 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
@@ -9,6 +8,8 @@ import { MaterializedSensorComponent } from './materialized-sensor/materialized-
 import { MultiOptionsSelectorComponent } from './options-selector/options-selector.component';
 import { AnalysisDescriptionComponent } from './analysis-description/analysis-description.component';
 import { ReportingComponent } from './reporting/reporting.component';
+import { SensorGraphComponent } from './sensor-graph/sensor-graph.component';
+import { ChartModule } from "angular2-chartjs";
 
 
 @NgModule({
@@ -17,13 +18,15 @@ import { ReportingComponent } from './reporting/reporting.component';
     MaterializedSensorComponent,
     MultiOptionsSelectorComponent,
     AnalysisDescriptionComponent,
-    ReportingComponent
+    ReportingComponent,
+    SensorGraphComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    FormsModule
+    FormsModule,
+    ChartModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject, combineLatest, ReplaySubject, Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { map, tap, shareReplay, publishLast, publishReplay } from 'rxjs/operators';
 import { CachedData, DataDownloaderService } from './data-downloader.service';
 import { SensorViewData } from './data-processor';
 import { getArrayIndexes, flatMap, KeyValueCache, KeyValuelistMap } from "./utils";
@@ -33,23 +33,17 @@ export class AnalyticsDataFacadeService {
   // execution of context is with the LatestValue of each observable
   settings$: Observable<ISettings>
   meta$ = new ReplaySubject<{}>()
-  sensorData$: Observable<SensorViewData>
-  // filters$: Observable<Filter[]>
-  
+  sensorData$: Observable<SensorViewData>  
   dynamicFilterOptions$: Observable<KeyValuelistMap>
   filterIdAndSelectionsUpdater = new ReplaySubject<any[]>()
   
   isLoading = false
 
   constructor(private downloader: DataDownloaderService) {
-    this.sensorData$ = this.sensorData.asObservable()
-
-    // this.filters$ = combineLatest(this.cachedData, this.meta.groupNames.selectedIds).pipe(
-    //   map(
-    //     ([data, [mainPartitionerId]]) => {
-    //       return data.filters.filter(f => f.id !== mainPartitionerId)
-    //   })
-    // )
+    this.sensorData$ = this.sensorData.pipe(
+      tap(d => console.log("sensorData$", d)), 
+      shareReplay()
+    )
 
     this.dynamicFilterOptions$ = this.filterIdAndSelectionsUpdater.pipe(
       tap(x => console.log("filter update received", x)),
@@ -57,7 +51,8 @@ export class AnalyticsDataFacadeService {
         ([filterId, selectedValueIds]) => 
         this.filterKeyValueCache.cacheAndReturn(
           filterId as number, 
-          selectedValueIds as number[]))
+          selectedValueIds as number[])),
+        shareReplay()
     )
     
     this.meta$AggregationSetup()
@@ -104,7 +99,8 @@ export class AnalyticsDataFacadeService {
           groupNameSelected: meta['groupNamesSelected'],
         }
       }
-    ))
+    ),
+    shareReplay())
   }
 
   private sensorData$AggregationSetup = () => {

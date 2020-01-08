@@ -1,5 +1,4 @@
 <div class="p-3">
-
   <h1> 
     <span><a class="btn btn-secondary" role="button" data-toggle="collapse" href="#options">Options</a></span>
     Report
@@ -76,5 +75,11 @@
       <div class="mt-5">
         <materialized-sensor [data]="data[0]" [metricsEnabled]="data[1].metricsSelected"></materialized-sensor>
       </div>
+
+    <div *ngIf="(analyticsDataFacade.sensorData$ | async) as sensor">
+      <sensor-graph [sensor]="sensor"></sensor-graph>
+    </div>
   </div>
+
+  
 </div>

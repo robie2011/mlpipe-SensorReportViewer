@@ -1,0 +1,9 @@
+<div class="">
+    <div *ngFor="let group of groupedData" class="mt-5">
+        <div class="row">
+            <div class="col" *ngFor="let sensor of group">
+                <chart [style.height]="'250px'" class="col" type="bar" [data]="sensor" [options]="options"></chart>
+            </div>
+        </div>
+    </div>
+</div>
