@@ -10,3 +10,17 @@ export function mapToSelectedOptions(arr: number[]): SelectedOptionsMap {
   arr.forEach(x => data[x] = true)
   return data
 }
+
+
+export type SelectedOptionsArray = Array<number>
+
+export interface ISettings {
+  metrics: string[],
+  metricsSelected: SelectedOptionsArray
+
+  sensors: string[],
+  sensorsSelected: SelectedOptionsArray
+
+  groupNames: string[],
+  groupNameSelected: number
+}

@@ -46,8 +46,6 @@ export class MultiOptionsSelectorComponent {
     }).slice(ixStart, ixEnd)
   }
 
-
-
   click(index: number){
     let marked = [index]
     if (!this.multiselect) {

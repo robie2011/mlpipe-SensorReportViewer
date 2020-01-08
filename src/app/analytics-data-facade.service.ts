@@ -3,21 +3,9 @@ import { Subject, combineLatest, ReplaySubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { CachedData, DataDownloaderService } from './data-downloader.service';
 import { SensorViewData } from './data-processor';
+import { getArrayIndexes, flatMap } from "./utils";
+import { ISettings } from "./models";
 
-
-export type SelectedOptionsArray = Array<number>
-
-function getArrayIndexes<T>(arr: Array<T>) {
-  return arr.map((v, ix) => ix)
-}
-
-
-export function flatMap<T,U>(arr: Array<T>, cb: (x: T) => Array<U>): Array<U>{
-  let result = []
-  arr.map(x => cb(x))
-  .forEach(xs => result.push(...xs))
-  return result
-}
 
 
 class OptionsSubject {
@@ -131,13 +119,3 @@ export class AnalyticsDataFacadeService {
   }
 }
 
-interface ISettings {
-  metrics: string[],
-  metricsSelected: SelectedOptionsArray
-
-  sensors: string[],
-  sensorsSelected: SelectedOptionsArray
-
-  groupNames: string[],
-  groupNameSelected: number
-}
