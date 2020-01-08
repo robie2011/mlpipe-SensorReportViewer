@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
-import { mapToSelectedOptions } from '../datastructures';
-import { SelectedOptions } from "../datastructures";
+import { mapToSelectedOptions } from '../models';
+import { SelectedOptionsMap } from "../models";
 import { SensorViewData } from '../data-processor';
 
 @Component({
@@ -9,7 +9,7 @@ import { SensorViewData } from '../data-processor';
   styleUrls: ['./materialized-sensor.component.scss']
 })
 export class MaterializedSensorComponent {
-  _metricsEnabled: SelectedOptions;
+  _metricsEnabled: SelectedOptionsMap;
 
   @Input()
   set metricsEnabled(indexes: number[]){

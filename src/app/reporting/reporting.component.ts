@@ -21,7 +21,7 @@ const json_file = "./assets/export_data_empa.json"
 export class ReportingComponent implements OnInit {
 
   groupsAndSettings = combineLatest(
-    this.analyticsDataFacade.groups$,
+    this.analyticsDataFacade.sensorData$,
     this.analyticsDataFacade.settings$
   ).pipe(tap(console.log))
 

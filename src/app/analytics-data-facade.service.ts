@@ -1,13 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { ISensorsLastGroupLevelMetrics, ISensorReportDataDeprecated, restructureData } from './datastructures';
-import { Subject, combineLatest, ReplaySubject } from 'rxjs';
+import { Subject, combineLatest, ReplaySubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { CachedData, DataDownloaderService } from './data-downloader.service';
 import { SensorViewData } from './data-processor';
 
 
-export type SelectedOptions = Array<number>
+export type SelectedOptionsArray = Array<number>
 
 function getArrayIndexes<T>(arr: Array<T>) {
   return arr.map((v, ix) => ix)
@@ -21,16 +19,6 @@ export function flatMap<T,U>(arr: Array<T>, cb: (x: T) => Array<U>): Array<U>{
   return result
 }
 
-export interface AnalyticResultState {
-  activePage: number,
-  pages: number[],
-  metrics: string[],
-  sensors: string[],
-  metricsSelected: SelectedOptions,
-  sensorSelected: SelectedOptions,
-  limit: number,
-  result: ISensorsLastGroupLevelMetrics[]
-}
 
 class OptionsSubject {
   readonly selectedIds = new Subject<number[]>()
@@ -44,7 +32,7 @@ class OptionsSubject {
 })
 export class AnalyticsDataFacadeService {
   private cachedData = new Subject<CachedData>()
-  private groups = new Subject<SensorViewData>()
+  private sensorData = new Subject<SensorViewData>()
   public meta = {
     "sensors": new OptionsSubject(),
     "metrics": new OptionsSubject(),
@@ -53,13 +41,21 @@ export class AnalyticsDataFacadeService {
 
   // it waits till we have values for all observable
   // execution of context is with the LatestValue of each observable
-  settings$ = new ReplaySubject<ISettings>()
+  settings$: Observable<ISettings>
   meta$ = new ReplaySubject<{}>()
-  groups$ = new ReplaySubject<SensorViewData>()
+  sensorData$: Observable<SensorViewData>
   
   isLoading = false
 
   constructor(private downloader: DataDownloaderService) {
+    this.sensorData$ = this.sensorData.asObservable()
+
+    this.meta$AggregationSetup()
+    this.settings$AggregationSetup()
+    this.sensorData$AggregationSetup()
+  }
+
+  private meta$AggregationSetup = () =>{
     /**
      * getting two observables from OptionSubject
      * and mapping to flat object with key containing name 
@@ -84,14 +80,9 @@ export class AnalyticsDataFacadeService {
       })).subscribe(xs => this.meta$.next(xs))
   }
 
-  private setupSettings = () => {
-    // order is important
-    this.groups.subscribe(d => this.groups$.next(d))
-
-    combineLatest(
-      this.meta$
-      ).pipe(map<any[], ISettings>(
-        ([meta]) => {
+  private settings$AggregationSetup = () => {
+    this.settings$ = this.meta$.pipe(map(
+      meta => {
         return {
           metrics: meta['metrics'],
           metricsSelected: meta['metricsSelected'],
@@ -102,20 +93,31 @@ export class AnalyticsDataFacadeService {
           groupNames: meta['groupNames'],
           groupNameSelected: meta['groupNamesSelected'],
         }
-      }))
-      .subscribe(v => this.settings$.next(v))
+      }
+    ))
+  }
+
+  private sensorData$AggregationSetup = () => {
+    // we are waiting to get the latest cachedData and parameters to extract viewData
+    combineLatest(
+      this.cachedData, 
+      this.meta["sensors"].selectedIds, 
+      this.meta["groupNames"].selectedIds).subscribe(([cachedData, [selectedSensorId], [selectedPartitionerId]]) => {
+        console.log(`viewData parameters: sensorId=${selectedSensorId}, partitionerId=${selectedPartitionerId}`)
+
+      this.sensorData.next(cachedData.getViewData(selectedPartitionerId, selectedSensorId));
+      this.isLoading = false
+    })
   }
 
   public downloadAndSetup = (name: string) => {
     this.isLoading = true
-    
-    
-    this.setupSettings();
-    
-    this.downloader.get(name).subscribe(data => {
-      console.log('data downloaded');
 
-      // todo
+    this.downloader.get(name).subscribe(data => {
+
+      this.cachedData.next(data);
+
+      // auto seelct new parameters according new data
       this.meta['metrics'].names.next(data.metrics)
       this.meta['metrics'].selectedIds.next(getArrayIndexes(data.metrics))
       
@@ -125,29 +127,16 @@ export class AnalyticsDataFacadeService {
       this.meta['groupNames'].names.next(data.groupers)
       this.meta['groupNames'].selectedIds.next([0])
 
-      this.cachedData.next(data);
-    });
-
-    // selecting first group for display
-  
-    combineLatest(
-      this.cachedData, 
-      this.meta["sensors"].selectedIds, 
-      this.meta["groupNames"].selectedIds).subscribe(([cachedData, [selectedSensorId], [selectedPartitionerId]]) => {
-        console.log(`viewData parameters: sensorId=${selectedSensorId}, partitionerId=${selectedPartitionerId}`)
-
-      this.groups.next(cachedData.getViewData(selectedPartitionerId, selectedSensorId));
-      this.isLoading = false
     });
   }
 }
 
 interface ISettings {
   metrics: string[],
-  metricsSelected: SelectedOptions
+  metricsSelected: SelectedOptionsArray
 
   sensors: string[],
-  sensorsSelected: SelectedOptions
+  sensorsSelected: SelectedOptionsArray
 
   groupNames: string[],
   groupNameSelected: number

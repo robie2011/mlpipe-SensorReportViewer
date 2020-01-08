@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output } from '@angular/core';
 import { EventEmitter } from '@angular/core';
-import { SelectedOptions, mapToSelectedOptions } from "../datastructures";
+import { SelectedOptionsMap, mapToSelectedOptions } from "../models";
 
 @Component({
   selector: 'options-selector',
@@ -25,7 +25,7 @@ export class MultiOptionsSelectorComponent {
   isSlicedView = false
 
   private _selectedArray: number[]
-  _selected: SelectedOptions
+  _selected: SelectedOptionsMap
   
   @Input()
   set selected(indexes: number[]){
