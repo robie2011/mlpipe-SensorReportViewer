@@ -13,4 +13,5 @@ Both can be found in subdirectory:
     dist/SensorReportViewer/
 
 ## Note
-For developement purpose we used www.jsdelivr.com as CDN for serving static files. We can upload our static files to a free github repository and acces our files through jsdelivr-service.
+During developement we used www.jsdelivr.com as CDN for serving static files. We can upload our static files to [a free github](https://github.com/robie2011/mlpipe-report-staticfiles) repository and acces our files through jsdelivr-service. Of course it is possible to use an internal webserver for this purpose.
+
