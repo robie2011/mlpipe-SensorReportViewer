@@ -9,4 +9,6 @@ git add *
 git commit -m "update $commit_id"
 git push
 
+cp dist/SensorReportViewer/index.html ../code/static/
+
 cd -
