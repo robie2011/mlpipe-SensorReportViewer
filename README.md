@@ -1,27 +1,16 @@
-# SensorReportViewer
+# Readme
+To build project execute the following code:
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.8.
+    ng build --prod --aot
 
-## Development server
+After building we have two kinds of files for deployment. 
+The first one are static files which are in our case icon and JS-Files.
+The other one is our `index.html` template file for generating reports.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
-## Code scaffolding
+Both can be found in subdirectory:
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+    dist/SensorReportViewer/
 
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+## Note
+For developement purpose we used www.jsdelivr.com as CDN for serving static files. We can upload our static files to a free github repository and acces our files through jsdelivr-service.
