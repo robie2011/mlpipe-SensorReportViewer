@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { Observable, of } from 'rxjs'
 import { ISensorReportData, DataProcessor, Filter } from './data-processor'
-
-
+import { environment } from 'src/environments/environment';
+import { map } from 'rxjs/operators';
 
 export class CachedData {
   constructor(
@@ -42,13 +42,8 @@ export class DataDownloaderService {
   constructor(private http: HttpClient) { }
 
   get(name: string): Observable<CachedData> {
-    let data = new CachedData(window['sensor_data'])
+    let rawData = environment.production ? window['sensor_data'] : JSON.parse(window.localStorage.getItem("data"))
+    let data = new CachedData(rawData)
     return of(data)
-
-    // let url = `http://localhost:5000/api/analytics/${name}`
-    // console.log("downloading data from", url)
-    // return this.http.get<ISensorReportData>(url).pipe(
-    //   map(d => new CachedData(d))
-    // )
   }
 }
