@@ -35,6 +35,8 @@ export class SensorGraphComponent implements OnChanges {
       return {
         label: metricName,
         data: metricSerie,
+        backgroundColor: () => 'rgba(0, 0, 0, .7)',
+        borderColor: () =>  'rgba(0, 0, 0, .8)'
       }
     })
 
