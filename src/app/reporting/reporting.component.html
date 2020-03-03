@@ -42,16 +42,15 @@
         (select)="analyticsDataFacade.meta['groupNames'].updateSelections($event)"></options-selector>    
 
     <!-- debug -->
-    <h1 class="mt-5"><a class="btn btn-secondary" #settingsBtn (click)="settingsBtn.showSettings = !settingsBtn.showSettings">Debug Settings</a></h1>
+    <!-- <h1 class="mt-5"><a class="btn btn-secondary" #settingsBtn (click)="settingsBtn.showSettings = !settingsBtn.showSettings">Debug Settings</a></h1>
     <table *ngIf="settingsBtn.showSettings" class="table table-sm" id="settings">
       <tr *ngFor="let item of settings | keyvalue">
         <td>{{item.key}}</td>
         <td>
-          <!-- <span class="btn btn-outline-dark mr-1 mb-1" *ngFor="let s of getViewValues(item.value)">{{s}}</span> -->
           <code class="mr-1 mb-1" *ngFor="let s of getViewValues(item.value)">{{s}} | </code>
         </td>
       </tr>
-    </table>
+    </table> -->
 
     </div>
     <!-- end: settings -->
