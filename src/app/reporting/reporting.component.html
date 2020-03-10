@@ -19,21 +19,21 @@
         [options]="settings.sensorNames"
         [selected]="settings.sensorSelected" 
         [multiselect]="false" 
-        (select)="sensorDataService.updateSelection('sensor', $event)"></options-selector>
+        (select)="sensorDataService.updateSettings('sensor', $event)"></options-selector>
 
       <options-selector 
         [name]="'Metrics'" 
         [options]="settings.metricNames" 
         [selected]="settings.metricsSelected"
         [multiselect]="true" 
-        (select)="sensorDataService.updateSelection('metrics', $event)"></options-selector>
+        (select)="sensorDataService.updateSettings('metrics', $event)"></options-selector>
 
       <options-selector 
         [name]="'Grouping'" 
         [options]="settings.groupNames" 
         [selected]="settings.groupSelected"
         [multiselect]="false" 
-        (select)="sensorDataService.updateSelection('group', $event)"></options-selector>    
+        (select)="sensorDataService.updateSettings('group', $event)"></options-selector>    
 
     </div>
     <!-- end: settings -->
@@ -62,14 +62,22 @@
 
 
   <div *ngIf="(groupsAndSettings | async) as data">
-      <div class="mt-5">
+    <ng-template [ngIf]="data[0]['metricsByGroup'].length" [ngIfElse]="noValues">
+      <div class="mt-5" >
         <materialized-sensor [data]="data[0]" [metricsEnabled]="data[1]"></materialized-sensor>
       </div>
-
-    <div>
-      <sensor-graph [sensor]="data[0]" [metricsEnabled]="data[1]"></sensor-graph>
-    </div>
+    
+      <div>
+        <sensor-graph [sensor]="data[0]" [metricsEnabled]="data[1]"></sensor-graph>
+      </div>
+    </ng-template>
   </div>
-
-  
 </div>
+
+
+<ng-template #noValues>
+  <div class="alert alert-info">
+    <h1>No Values</h1>
+    <p>Nothing to show. Try ajusting filters.</p>
+  </div>
+</ng-template>
