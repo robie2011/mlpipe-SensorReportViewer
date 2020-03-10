@@ -46,7 +46,7 @@ export class SensorViewData {
 
 
 
-class PartitionFilteringInfo {
+class PartitionFilterLookup {
   constructor(private readonly partitionerToPartitionMask: NestedNumberLookup){
   }
 
@@ -66,13 +66,13 @@ export class DataProcessor {
   /**
    * key contains group value (e.g. "1" for January if for grouping month is choosen)
    */
-  private static group(
+  private static groupByMainPartitionId(
     dataset: GroupToMetricsToMeasurement,
-    partitions: number[]): GroupedMetrics {
+    mainPartitionIds: number[]): GroupedMetrics {
 
     let groupedData: GroupedMetrics = {}
     dataset.forEach((metrics, rowId) => {
-      const partitionId = partitions[rowId]
+      const partitionId = mainPartitionIds[rowId]
 
       const key = partitionId
       if (!groupedData[key]) groupedData[key] = []
@@ -88,7 +88,7 @@ export class DataProcessor {
     return orderedGroupData
   }
 
-  private static createGroupMetricsMatrix(
+  private static selectSensorData(
     data: GroupToMetricToSensorToMeasurement,
     selectSensorId: number): GroupToMetricsToMeasurement {
 
@@ -100,7 +100,7 @@ export class DataProcessor {
   private static aggregate(
     groups: GroupedMetrics,
     aggregationFunctionsByMetricId: MetricsAggregatorFunc[]): AggregatedMetric {
-    let subResult: number[][] = []
+    let metricsByGroup: number[][] = []
 
     // Note: Object.keys(groups) represents the order of group elements.
     // Ordering is important for displaying "pretty names" for group element vaulue later
@@ -122,12 +122,12 @@ export class DataProcessor {
         }
       }
 
-      subResult.push(reducedValues)
+      metricsByGroup.push(reducedValues)
     })
 
     const result: AggregatedMetric = {
       mainPartitionerIds: Object.keys(groups).map(Number),
-      metricsByGroup: subResult
+      metricsByGroup: metricsByGroup
     }
 
     return result
@@ -145,17 +145,19 @@ export class DataProcessor {
     filters: SelectedFilter[],
     partitioners: PartitionerInfo[]): SensorViewData {
 
-    const partitionValueByPartitioner = DataProcessor.createFilteringInfo(filters)
+    const partitionFilterLookup = DataProcessor.createPartitionFilterLookup(filters)
     
-      // note: sensordata and group data was filtered! Do not use old unfiltered data.
-    const filteredResult = DataProcessor.filterPartitions(rawData, partitionValueByPartitioner)
+    // filter: partition level (axis=0)
+    const filteredResult = DataProcessor.filterPartitions(rawData, partitionFilterLookup)
 
-    // grouping data
-    const reducedData = DataProcessor.createGroupMetricsMatrix(
+    // filtering: sensor level (axis=1)
+    const sensorData = DataProcessor.selectSensorData(
       filteredResult.filteredSensorData, sensorId)
+
+    // grouping data by main group id
     const mainPartitionIds = filteredResult.filteredGroupData.map(
-      partitioner => partitioner[mainPartitionerId])
-    let groupedData = DataProcessor.group(reducedData, mainPartitionIds)
+      partitioners => partitioners[mainPartitionerId])
+    let groupedData = DataProcessor.groupByMainPartitionId(sensorData, mainPartitionIds)
 
     let aggregations = DataProcessor.aggregate(
       groupedData,
@@ -183,7 +185,7 @@ export class DataProcessor {
 
   private static filterPartitions(
     rawData: ISensorReportData, 
-    filteringInfo: PartitionFilteringInfo) {
+    partitionFilterLookup: PartitionFilterLookup) {
 
     // we iterate over partition values of each entry (each entry has multiple partitionId)
     // if all partition values of an entry is allowed to show,
@@ -191,7 +193,7 @@ export class DataProcessor {
     const validIndexes = {}
     rawData.meta.groupToPartitionerToPartition.forEach((partitionIds, ix) => {
       if (partitionIds.every(
-        (partitionId, partitionerId) => filteringInfo.canShow(partitionerId, partitionId))) {
+        (partitionId, partitionerId) => partitionFilterLookup.canShow(partitionerId, partitionId))) {
           validIndexes[ix] = true
       }
     })
@@ -208,8 +210,8 @@ export class DataProcessor {
     }
   }
 
-  private static createFilteringInfo(
-    filters: SelectedFilter[]) : PartitionFilteringInfo {
+  private static createPartitionFilterLookup(
+    filters: SelectedFilter[]) : PartitionFilterLookup {
 
     const partitionerToPartitionMask = {}
     filters.map(f => {
@@ -221,6 +223,6 @@ export class DataProcessor {
       }
     })
 
-    return new PartitionFilteringInfo(partitionerToPartitionMask)
+    return new PartitionFilterLookup(partitionerToPartitionMask)
   }
 }
