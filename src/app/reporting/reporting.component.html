@@ -15,31 +15,31 @@
 
 
   <div id="options" class="collapse show bg-light text-white border border-dark rounded p-3" 
-    *ngIf="!analyticsDataFacade.isLoading && (analyticsDataFacade.settings$ | async) as settings">
+    *ngIf="(analyticsDataFacade.settingsNew | async) as settings">
 
     <!-- settings -->
     <div>
       
       <options-selector 
         [name]="'Sensors'" 
-        [selected]="settings.sensorsSelected" 
-        [options]="settings.sensors"
+        [options]="settings.sensorNames"
+        [selected]="settings.sensorSelected" 
         [multiselect]="false" 
-        (select)="analyticsDataFacade.meta['sensors'].updateSelections($event)"></options-selector>
+        (select)="analyticsDataFacade.updateSelection('sensor', $event)"></options-selector>
 
       <options-selector 
         [name]="'Metrics'" 
-        [options]="settings.metrics" 
+        [options]="settings.metricNames" 
         [selected]="settings.metricsSelected"
         [multiselect]="true" 
-        (select)="analyticsDataFacade.meta['metrics'].updateSelections($event)"></options-selector>
+        (select)="analyticsDataFacade.updateSelection('metrics', $event)"></options-selector>
 
       <options-selector 
         [name]="'Grouping'" 
         [options]="settings.groupNames" 
-        [selected]="settings.groupNameSelected"
+        [selected]="settings.groupSelected"
         [multiselect]="false" 
-        (select)="analyticsDataFacade.meta['groupNames'].updateSelections($event)"></options-selector>    
+        (select)="analyticsDataFacade.updateSelection('group', $event)"></options-selector>    
 
     <!-- debug -->
     <!-- <h1 class="mt-5"><a class="btn btn-secondary" #settingsBtn (click)="settingsBtn.showSettings = !settingsBtn.showSettings">Debug Settings</a></h1>
@@ -56,20 +56,21 @@
     <!-- end: settings -->
   </div>
 
-  <h2 class="mt-3"><i class="fas fa-filter"></i><span class="badge badge-light">Group Filters</span></h2>
-  <div *ngIf="(filtersAndFilterSelections$ | async) as filtersAndSelections">
-    <div *ngFor="let filter of filtersAndSelections[0]">
+  <div *ngIf="(analyticsDataFacade.filterSettings | async) as filters">
+    <h2 class="mt-3"><i class="fas fa-filter"></i><span class="badge badge-light">Group Filters</span></h2>
+    <div *ngFor="let filter of filters">
       <options-selector 
         [name]="filter.name" 
-        [options]="filter.optionNames" 
-        [selected]="filtersAndSelections[1][filter.id]"
+        [options]="filter.partitionNames"
+        [optionValues]="filter.partitionIds"
+        [selected]="filter.selected"
         [multiselect]="true"
         (select)="updateFilter(filter.id, $event)"
         ></options-selector>
     </div>
   </div>
 
-  <div *ngIf="(analyticsDataFacade.sensorData$ | async) as sdata">
+  <div *ngIf="(analyticsDataFacade.viewData | async) as sdata">
     <div *ngIf="sdata.metricsWithoutAggregators" class="alert alert-warning mt-5">
       Note: Following metrics do not have aggregation functions and can not be aggregated and WebUI: 
       {{sdata.metricsWithoutAggregators.join(", ")}}
@@ -79,10 +80,10 @@
 
   <div *ngIf="(groupsAndSettings | async) as data">
       <div class="mt-5">
-        <materialized-sensor [data]="data[0]" [metricsEnabled]="data[1].metricsSelected"></materialized-sensor>
+        <materialized-sensor [data]="data[0]" [metricsEnabled]="data[1]"></materialized-sensor>
       </div>
 
-    <div *ngIf="(analyticsDataFacade.sensorData$ | async) as sensor">
+    <div *ngIf="(analyticsDataFacade.viewData | async) as sensor">
       <sensor-graph [sensor]="sensor"></sensor-graph>
     </div>
   </div>

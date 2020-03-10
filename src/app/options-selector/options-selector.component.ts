@@ -21,6 +21,9 @@ export class MultiOptionsSelectorComponent {
 
   @Input()
   options: string[]
+
+  @Input()
+  optionValues: any[]
   
   isSlicedView = false
 
@@ -29,6 +32,12 @@ export class MultiOptionsSelectorComponent {
   
   @Input()
   set selected(indexes: number[]){
+    if (this.optionValues){
+      // custom values are used (e.g. mapping year from group filters)
+      // in this case we map this back to our internal numeric representation
+      indexes = (indexes as any[]).map(v => this.optionValues.findIndex(opt => opt === v))
+    }
+
     let options = this.options
     this._selectedArray = indexes
     this._selected = mapToSelectedOptions(indexes)
@@ -57,6 +66,15 @@ export class MultiOptionsSelectorComponent {
       // case 2: index wasn't in list. Adding.
       if (!isElementRemoved) marked.push(index)
     }
+
+    if (this.optionValues) {
+      // see selected()
+      // we map back optionValues representation
+      console.log("original ix", marked)
+      marked = marked.map( (v, _) => this.optionValues[v])
+      console.log("original mapped", marked)
+    }
+
     this.select.emit(marked)
   }
 

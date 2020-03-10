@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { AnalyticsDataFacadeService } from '../analytics-data-facade.service';
 import { combineLatest } from 'rxjs';
-import { tap, map, skip } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
+import { clone } from '../utils';
 
-const VIEW_UPDATE_DELAY = 500
 
 @Component({
   selector: 'app-reporting',
@@ -13,19 +13,11 @@ const VIEW_UPDATE_DELAY = 500
 export class ReportingComponent implements OnInit {
 
   groupsAndSettings = combineLatest(
-    this.analyticsDataFacade.sensorData$,
-    this.analyticsDataFacade.settings$
-  ).pipe(tap(console.log))
-
-  filtersAndFilterSelections$ = combineLatest(
-    // getting filters without filter for main group
-    this.analyticsDataFacade.sensorData$.pipe(
-      map(d => d.filters.filter(f => f.id !== d.mainGroupId))),
-    
-    // getting filter selections
-    this.analyticsDataFacade.dynamicFilterOptions$
-  )
-
+    this.analyticsDataFacade.viewData,
+    this.analyticsDataFacade.settingsNew
+  ).pipe(map(
+    ([data, settings]) => [data, settings.metricsSelected]
+  ))
 
 
   constructor(
@@ -43,7 +35,9 @@ export class ReportingComponent implements OnInit {
   }
 
   updateFilter(filterId: number, selectionIds: number[]){
-    this.analyticsDataFacade.filterIdAndSelectionsUpdater.next(
-      [filterId, selectionIds])
+    let filters = this.analyticsDataFacade.filterSettings.getValue()
+    filters = clone(filters)
+    filters.filter(f => f.id === filterId)[0].selected = selectionIds
+    this.analyticsDataFacade.filterSettings.next(filters)
   }
 }
