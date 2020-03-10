@@ -6,7 +6,7 @@ type GroupedMetrics = { [index: string]: number[][] }
 type MetricsAggregatorFunc = { (a: number, b: number): number }
 type GroupToMetricsToMeasurement = Array<Array<number>>
 type NestedNumberLookup = { [i: number]: { [j: number]: boolean } }
-export type NumberToNumberList = {[i: number]: number[] }
+
 
 export interface SelectedFilter {
   id: number,
@@ -119,9 +119,6 @@ export class DataProcessor {
             metricMeasurements.reduce(metricsAggregatorOrNull) :
             NaN
           reducedValues.push(value)
-          if (!metricsAggregatorOrNull){
-            console.log("no aggregator for ", metricId, value)
-          }
         }
       }
 

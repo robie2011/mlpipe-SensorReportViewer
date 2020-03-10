@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AnalyticsDataFacadeService } from '../analytics-data-facade.service';
+import { SensorDataService } from '../sensor-data.service';
 import { combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { clone } from '../utils';
@@ -10,34 +10,22 @@ import { clone } from '../utils';
   templateUrl: './reporting.component.html',
   styleUrls: ['./reporting.component.scss']
 })
-export class ReportingComponent implements OnInit {
+export class ReportingComponent{
 
   groupsAndSettings = combineLatest(
-    this.analyticsDataFacade.viewData,
-    this.analyticsDataFacade.settingsNew
+    this.sensorDataService.viewData,
+    this.sensorDataService.settings
   ).pipe(map(
     ([data, settings]) => [data, settings.metricsSelected]
   ))
 
-
   constructor(
-    public analyticsDataFacade: AnalyticsDataFacadeService) { }
-    private name: string
-
-  getViewValues(arr){
-    if (arr instanceof(Array)) return arr
-    return [arr]
-  }
-
-  ngOnInit() {
-    this.groupsAndSettings
-    this.analyticsDataFacade.downloadAndSetup(this.name)
-  }
+    public sensorDataService: SensorDataService) { }
 
   updateFilter(filterId: number, selectionIds: number[]){
-    let filters = this.analyticsDataFacade.filterSettings.getValue()
+    let filters = this.sensorDataService.filterSettings.getValue()
     filters = clone(filters)
     filters.filter(f => f.id === filterId)[0].selected = selectionIds
-    this.analyticsDataFacade.filterSettings.next(filters)
+    this.sensorDataService.filterSettings.next(filters)
   }
 }

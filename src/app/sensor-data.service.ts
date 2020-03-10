@@ -1,43 +1,34 @@
 import { Injectable } from '@angular/core';
-import { Subject, combineLatest, ReplaySubject, BehaviorSubject } from 'rxjs';
+import { Subject, combineLatest, ReplaySubject, BehaviorSubject, of } from 'rxjs';
 import { map, filter, distinctUntilChanged } from 'rxjs/operators';
-import { DataDownloaderService } from './data-downloader.service';
 import { SensorViewData } from './data-processor';
 import { clone } from './utils';
-import { CachedData, PartitionerInfo } from './data-preprocessing';
+import { CachedData, PartitionerInfo, createCachedData } from './data-preprocessing';
+import { environment } from 'src/environments/environment';
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class AnalyticsDataFacadeService {
-
+export class SensorDataService {
   private cachedData = new ReplaySubject<CachedData>()
-  public settingsNew = new BehaviorSubject<SettingsNew>(null)
+  public viewData = new ReplaySubject<SensorViewData>()
+  public settings = new BehaviorSubject<Settings>(null)
+  public filterSettings = new BehaviorSubject<FilterSelection[]>([])
 
-  sensorData = new Subject<SensorViewData>()
-
-  viewData = new ReplaySubject<SensorViewData>()
-  filterSettings = new BehaviorSubject<FilterSelection[]>([])
-
-
-  constructor(private downloader: DataDownloaderService) {
-
-    // temp
-    this.viewData.subscribe(v => console.log("viewData received", v.usedFilters))
-    this.filterSettings.subscribe(v => console.log("filter received", v))
-
+  constructor() {
+    this.downloadAndSetup()
   }
 
 
-  public downloadAndSetup = (name: string) => {
+  downloadAndSetup = () => {
     // setup initial settings
     this.cachedData.subscribe(cache => {
       let findMaxPartitions = [... cache.partitioners]
       const largestPartitionerId = findMaxPartitions.sort((a,b) => a.partitionIds.length - b.partitionIds.length).reverse()[0].id
 
       console.log("sending initial settings")
-      this.settingsNew.next({
+      this.settings.next({
         sensorNames: cache.sensors,
         sensorSelected: [0],
         metricNames: cache.metrics,
@@ -48,7 +39,7 @@ export class AnalyticsDataFacadeService {
     })
 
     // setup generating view data
-    combineLatest(this.cachedData, this.settingsNew, this.filterSettings)
+    combineLatest(this.cachedData, this.settings, this.filterSettings)
       .pipe(
         // on first execution we have null value for setting
         filter(([, settings]) => settings != null),
@@ -75,14 +66,14 @@ export class AnalyticsDataFacadeService {
 
       })
 
-    this.downloader.get(name).subscribe(data => {
+    this.downloadData().subscribe(data => {
       console.log("loading data")
       this.cachedData.next(data);
     });
   }
 
   updateSelection = (name: string, value: number[]) => {
-    let v = this.settingsNew.getValue()
+    let v = this.settings.getValue()
     if (!v) {
       console.warn("looks like we are trying to update settings without having any settings")
       return
@@ -109,11 +100,17 @@ export class AnalyticsDataFacadeService {
         break;
     }
 
-    this.settingsNew.next(v)
+    this.settings.next(v)
+  }
+
+  private downloadData(){
+    let rawData = environment.production ? window['sensor_data'] : JSON.parse(window.localStorage.getItem("data"))
+    let data = createCachedData(rawData)
+    return of(data)
   }
 }
 
-export interface SettingsNew {
+export interface Settings {
   sensorNames: string[]
   sensorSelected: number[]
   metricNames: string[]
@@ -125,10 +122,3 @@ export interface SettingsNew {
 export class FilterSelection extends PartitionerInfo {
   public selected: number[] = []
 }
-
-// export interface FilterSettings {
-//   filterNames: string[]
-//   filterOptionNames: string[][]
-//   filterSelections: number[][]
-// }
-
