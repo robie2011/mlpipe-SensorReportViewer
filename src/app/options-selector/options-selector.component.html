@@ -1,4 +1,4 @@
-<h5 class="mt-4 text-secondary">{{name}}</h5>
+<h5 class="mt-4 text-secondary hover" (click)="selectAll()" >{{name}}</h5>
 <div *ngIf="options && visibleOptions">
   <button *ngIf="isSlicedView" type="button" (click)="click(0)" class="btn mr-2 btn-outline-primary">◀</button>
   

@@ -8,7 +8,10 @@ import { SensorViewData } from '../data-processor';
 })
 export class SensorGraphComponent implements OnChanges {
   @Input() sensor: SensorViewData
-  groupedData: any[];  
+
+  @Input() metricsEnabled: number[]
+
+  groupedData: any[];
   // https://www.chartjs.org/docs/latest/configuration/legend.html
   // https://github.com/emn178/angular2-chartjs
   options = {
@@ -19,42 +22,43 @@ export class SensorGraphComponent implements OnChanges {
     }
   }
 
-
-
   ngOnChanges(changes: import("@angular/core").SimpleChanges): void {
     if (changes.sensor) {
       this.generateViewData()
     }
   }
 
-  private generateViewData(){
-    const seriesData = this.sensor.metricNames.map((metricName, metricId) => {
+  private generateViewData() {
+    const seriesData = this.sensor.metricNames
+    .map((metricName, metricId) => {
       const metricSerie = this.sensor.groupNames.map(
         (groupName, groupId) => this.sensor.metricsByGroup[groupId][metricId])
-      
+
       return {
+        metricId: metricId,
         label: metricName,
         data: metricSerie,
         backgroundColor: () => 'rgba(0, 0, 0, .7)',
-        borderColor: () =>  'rgba(0, 0, 0, .8)'
+        borderColor: () => 'rgba(0, 0, 0, .8)'
       }
     })
+    .filter(o => this.metricsEnabled.findIndex(m => m === o.metricId) > -1)
 
     const singleSensorViewData = seriesData.map(d => {
       return {
         labels: this.sensor.groupNames,
-      datasets: [d]
+        datasets: [d]
       }
     })
 
-    
+
     const groupedSensorViewData = []
     singleSensorViewData.forEach(
       (vdata, ix) => {
-        if (ix%2 === 0) {
+        if (ix % 2 === 0) {
           groupedSensorViewData.push([vdata])
         } else {
-          groupedSensorViewData[groupedSensorViewData.length-1].push(vdata)
+          groupedSensorViewData[groupedSensorViewData.length - 1].push(vdata)
         }
       }
     )

@@ -11,6 +11,19 @@ export class MultiOptionsSelectorComponent {
   visibleOptions: {index: number, name: string}[] = []
   _options: string[]
 
+  private mapSelectionIdsToExternalIds = (internalIndexes: number[]) =>{
+    if (!this.optionValues) return internalIndexes
+    return internalIndexes.map( (v, _) => this.optionValues[v])
+  }
+
+  private mapFromExternalSelectionIds = (indexes: number[]) => {
+    if (!this.optionValues) return indexes
+
+    // custom values are used (e.g. mapping year from group filters)
+    // in this case we map this back to our internal numeric representation
+    return (indexes as any[]).map(v => this.optionValues.findIndex(opt => opt === v))
+  }
+
   @Input() name: string
 
   @Input() multiselect: boolean = false
@@ -29,15 +42,10 @@ export class MultiOptionsSelectorComponent {
 
   private _selectedArray: number[]
   _selected: SelectedOptionsMap
-  
+
   @Input()
   set selected(indexes: number[]){
-    if (this.optionValues){
-      // custom values are used (e.g. mapping year from group filters)
-      // in this case we map this back to our internal numeric representation
-      indexes = (indexes as any[]).map(v => this.optionValues.findIndex(opt => opt === v))
-    }
-
+    indexes = this.mapFromExternalSelectionIds(indexes)
     let options = this.options
     this._selectedArray = indexes
     this._selected = mapToSelectedOptions(indexes)
@@ -67,16 +75,11 @@ export class MultiOptionsSelectorComponent {
       if (!isElementRemoved) marked.push(index)
     }
 
-    if (this.optionValues) {
-      // see selected()
-      // we map back optionValues representation
-      console.log("original ix", marked)
-      marked = marked.map( (v, _) => this.optionValues[v])
-      console.log("original mapped", marked)
-    }
-
-    this.select.emit(marked)
+    this.select.emit(
+      this.mapSelectionIdsToExternalIds(marked))
   }
+
+
 
   private getSlicedViewIndex = (dataLength: number, selection: number[], maxElements: number) => {
     let ixStart = 0
@@ -96,5 +99,16 @@ export class MultiOptionsSelectorComponent {
     }
 
     return { ixStart, ixEnd }
+  }
+
+  selectAll(){
+    if(!this.multiselect) return
+    if (this._selectedArray.length == this.options.length) {
+      this.select.emit([])
+    } else {
+      this.select.emit(
+        this.mapSelectionIdsToExternalIds(this.options.map((_, ix) => ix))
+      )
+    }
   }
 }
