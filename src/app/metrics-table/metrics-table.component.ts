@@ -5,10 +5,10 @@ import { SensorViewData } from '../data-processor';
 
 @Component({
   selector: 'materialized-sensor',
-  templateUrl: './materialized-sensor.component.html',
-  styleUrls: ['./materialized-sensor.component.scss']
+  templateUrl: './metrics-table.component.html',
+  styleUrls: ['./metrics-table.component.scss']
 })
-export class MaterializedSensorComponent {
+export class MetricsTable {
   _metricsEnabled: SelectedOptionsMap;
 
   @Input()
