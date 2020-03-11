@@ -7,13 +7,13 @@ import { MultiOptionsSelectorComponent } from './options-selector/options-select
 import { ReportingComponent } from './reporting/reporting.component';
 import { SensorGraphComponent } from './sensor-graph/sensor-graph.component';
 import { ChartModule } from "angular2-chartjs";
-import { MetricsTable } from './metrics-table/metrics-table.component';
+import { MetricsTableComponent } from './metrics-table/metrics-table.component';
 
 
 @NgModule({
   declarations: [
     AppComponent,
-    MetricsTable,
+    MetricsTableComponent,
     MultiOptionsSelectorComponent,
     ReportingComponent,
     SensorGraphComponent

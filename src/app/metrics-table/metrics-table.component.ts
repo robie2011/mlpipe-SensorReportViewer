@@ -8,7 +8,7 @@ import { SensorViewData } from '../data-processor';
   templateUrl: './metrics-table.component.html',
   styleUrls: ['./metrics-table.component.scss']
 })
-export class MetricsTable {
+export class MetricsTableComponent {
   _metricsEnabled: SelectedOptionsMap;
 
   @Input()
