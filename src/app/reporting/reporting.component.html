@@ -4,9 +4,6 @@
     Report
   </h1>
 
-  <div class="alert alert-warning cursor-pointer" (click)="reload()" *ngIf="needReload">
-  New analytics configuration received. Click here to reload.</div>
-
 
   <div id="options" class="collapse show bg-light text-white border border-dark rounded p-3" 
     *ngIf="(sensorDataService.settings | async) as settings">

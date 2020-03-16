@@ -1,14 +1,15 @@
 #!/bin/bash
-target_dir=../mlpipe-report-staticfiles
-rm $target_dir/*
-cp dist/SensorReportViewer/*.{ico,js} $target_dir/
-commit_id=$(git log --format="%h" -n 1)
 
-cd $target_dir
-git add *
-git commit -m "update $commit_id"
-git push
+SCRIPT=$(realpath $0)
+ROOT_DIR=$(cd `dirname $SCRIPT` && pwd)
+CDN_DIR=$ROOT_DIR/cdn
 
-cp dist/SensorReportViewer/index.html ../code/static/
+rm $CDN_DIR/*
+cp $ROOT_DIR/dist/SensorReportViewer/*.{ico,js} $CDN_DIR/
+
+
+# copy html-template to MLPIPE (only works if repo is named "mlpipe")
+MLPIPE_DIR=$(cd `dirname $SCRIPT` && cd ../mlpipe && pwd)
+cp $ROOT_DIR/dist/SensorReportViewer/index.html $MLPIPE_DIR/templates/
 
 cd -
