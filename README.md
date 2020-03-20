@@ -50,5 +50,5 @@ Bemerkung:
 
 ## Entwicklung
 
-In der Entwicklungsphase können die Metriken für die Visualisierung auch in das *LocalStorage* (Key: `data`) als serialisiertes JSON-Objekt gespeichert werden.
+In der Entwicklungsphase können die Metriken für die Visualisierung auch von das *LocalStorage* (Key: `data`) wiederhergestellt werden.
 
