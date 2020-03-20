@@ -3,7 +3,7 @@
 ## Projektbeschreibung
 
 Dieses Repository enthält den Sourcecode für die Applikation *SensorReportViewer*. 
-Die Applikation wird im Master Thesis Projekt *MLPIPE* 
+Die Applikation wird in der [Masterarbeit *MLPIPE*](https://github.com/robie2011/mlpipe) 
 für die Visualisierung der Metriken verwendet.
 Dazu werden die berechneten Metriken von *MLPIPE* 
 in die Angular Single Page Application eingebettet (Variable: `window.sensor_data`).
@@ -46,4 +46,9 @@ Bemerkung:
 
   * Die statischen Dateien können auch in die HTML-Vorlage eingebettet werden. Das würde aber die Dateigrösse des Analyseberichts unnötig vergrössern.
   * Während der Entwicklung haben wir den Dienst www.jsdelivr.com als CDN für die Bereitstellung der statischen Dateien verwendet. Dieser Dienst kann direkt auf die Dateien unseres Git-Repos zugreifen. Deshalb haben den Ordner `/cdn` für die statischen Dateien erstellt. Der Skript `export_build_files.sh` kopiert die statischen Dateien zum Ordner `/cdn`.
+
+
+## Entwicklung
+
+In der Entwicklungsphase können die Metriken für die Visualisierung auch in das *LocalStorage* (Key: `data`) als serialisiertes JSON-Objekt gespeichert werden.
 
