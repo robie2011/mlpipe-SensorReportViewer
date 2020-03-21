@@ -10,6 +10,6 @@ cp $ROOT_DIR/dist/SensorReportViewer/*.{ico,js} $CDN_DIR/
 
 # copy html-template to MLPIPE (only works if repo is named "mlpipe")
 MLPIPE_DIR=$(cd `dirname $SCRIPT` && cd ../mlpipe && pwd)
-cp $ROOT_DIR/dist/SensorReportViewer/index.html $MLPIPE_DIR/templates/
+cp $ROOT_DIR/dist/SensorReportViewer/index.html $MLPIPE_DIR/mlpipe/analytics_report_template.html
 
 cd -
